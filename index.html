@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summary & Quiz Generator Pro — Arraihan Academy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: #fff !important; color: #000 !important; }
+      .card-print { box-shadow: none !important; border: 1px solid #ccc !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP BAR LISENSI & STATUS -->
+  <div class="bg-slate-900 text-white text-xs py-2 px-4 no-print border-b border-slate-800">
+    <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved"></i> Licensed by Arraihan Academy (SWK)
+        </span>
+        <span id="licenseBadge" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-medium">
+          Memeriksa Lisensi...
+        </span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-slate-400">Device ID: <strong id="deviceIdDisplay" class="text-white font-mono select-all">---</strong></span>
+        <button onclick="openLicenseModal()" class="text-sky-400 hover:text-sky-300 underline font-semibold">
+          <i class="fa-solid fa-key mr-1"></i>Aktivasi Lisensi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
+            Summary & Quiz Generator <span class="text-indigo-600">PRO</span>
+          </h1>
+          <p class="text-xs text-slate-500 mt-1">Powered by Gemini 3.8 Flash Free Tier + Live Google Search Grounding</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openApiModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1.5 shadow-sm transition">
+          <i class="fa-solid fa-sliders text-indigo-600"></i>
+          <span id="apiStatusText">Atur API Key</span>
+        </button>
+        <button onclick="resetAll()" class="px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition" title="Reset Form">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- PANEL KIRI: INPUT MATERI & PENCARIAN (5 KOLOM) -->
+    <section class="lg:col-span-5 space-y-4 no-print">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass-chart text-indigo-600"></i> Sumber Materi & Pencarian AI
+          </h2>
+          <span id="activeModelPill" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
+            gemini-3.8-flash
+          </span>
+        </div>
+
+        <!-- Sakelar Pencarian Google Search Grounding & URL -->
+        <div class="p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/90 to-sky-50/90 border border-indigo-200/80 flex items-start justify-between gap-3">
+          <div class="space-y-0.5">
+            <label for="useWebSearchToggle" class="text-xs font-extrabold text-indigo-950 flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-brands fa-google text-indigo-600"></i> Aktifkan Pencarian Web & URL Terbaru
+            </label>
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+              Menggunakan <strong>Gemini Free Search Grounding</strong> untuk mencari fakta terbaru dari internet atau mengekstrak isi tautan URL secara langsung.
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            id="useWebSearchToggle"
+            checked
+            class="mt-1 w-4 h-4 accent-indigo-600 rounded cursor-pointer shrink-0"
+          />
+        </div>
+
+        <!-- Upload File (PDF / TXT / CSV) -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            Unggah Dokumen Lokal (.PDF, .TXT, .CSV, .MD)
+          </label>
+          <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl p-3.5 cursor-pointer bg-slate-50/60 hover:bg-indigo-50/30 transition text-center">
+            <i class="fa-solid fa-cloud-arrow-up text-xl text-indigo-500 mb-1"></i>
+            <span id="fileNameLabel" class="text-xs font-semibold text-slate-700">Klik untuk memilih file materi (Opsional)</span>
+            <span class="text-[10px] text-slate-400 mt-0.5">Ekstraksi instan di browser tanpa upload ke server</span>
+            <input type="file" id="fileInput" accept=".pdf,.txt,.csv,.md,.json" class="hidden" onchange="handleFileUpload(event)" />
+          </label>
+        </div>
+
+        <!-- Textarea Materi / Topik Pencarian / URL -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Topik Pencarian / Alamat URL Web / Teks Materi
+            </label>
+            <span id="charCount" class="text-[11px] text-slate-400">0 karakter</span>
+          </div>
+          <textarea
+            id="materialInput"
+            rows="8"
+            oninput="updateCharCount()"
+            placeholder="Ketik topik yang ingin dicari di internet (contoh: 'Pedoman terbaru skrining kesehatan primer'), tempelkan link URL artikel web, atau tempelkan naskah materi panjang di sini..."
+            class="w-full rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 p-3.5 text-sm outline-none transition resize-y"
+          ></textarea>
+        </div>
+
+        <!-- Parameter Kuis -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tingkat Kesulitan</label>
+            <select id="difficultySelect" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium bg-white outline-none focus:border-indigo-600">
+              <option value="Campuran (Pemahaman Konsep hingga Analisis Aplikasi - HOTS)">Campuran (Konsep & HOTS)</option>
+              <option value="Dasar & Menengah (Faktual & Konseptual)">Dasar & Menengah</option>
+              <option value="Tingkat Lanjut / HOTS (Analisis & Studi Kasus)">Tingkat Lanjut (HOTS)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Bentuk Kuis (10 Soal)</label>
+            <select id="questionTypeSelect" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium bg-white outline-none focus:border-indigo-600">
+              <option value="pg">10 Pilihan Ganda (A-D)</option>
+              <option value="campuran">7 Pilihan Ganda + 3 Esai</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tombol Generate -->
+        <button
+          id="generateBtn"
+          onclick="generateSummaryAndQuiz()"
+          class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Cari, Ringkas & Buat 10 Soal Kuis</span>
+        </button>
+      </div>
+
+      <!-- Riwayat Cepat LocalStorage -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Tersimpan
+          </h3>
+          <button onclick="clearHistory()" class="text-[11px] text-rose-500 hover:underline">Hapus Semua</button>
+        </div>
+        <div id="historyList" class="space-y-1.5 max-h-40 overflow-y-auto text-xs text-slate-600">
+          <p class="text-slate-400 italic text-xs">Belum ada riwayat materi.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL KANAN: HASIL RINGKASAN & 10 KUIS (7 KOLOM) -->
+    <section class="lg:col-span-7 space-y-4">
+
+      <!-- Placeholder Awal -->
+      <div id="emptyState" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center my-auto flex flex-col items-center justify-center min-h-[420px] no-print">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-4">
+          <i class="fa-solid fa-globe"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">Siap Mencari Referensi Terbaru, Meringkas & Menyusun 10 Kuis</h3>
+        <p class="text-xs text-slate-500 max-w-md mt-1.5 leading-relaxed">
+          Ketikkan topik apa saja, masukkan URL situs web, atau unggah dokumen PDF/TXT. Hasil ringkasan dan 10 soal kuis dapat langsung diekspor ke <strong>Microsoft Word (.doc)</strong>, <strong>Excel (.csv)</strong>, atau <strong>PDF</strong>.
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center min-h-[420px] flex flex-col items-center justify-center no-print">
+        <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+        <h3 id="loadingTitle" class="text-sm font-bold text-slate-800">Menelusuri Referensi & Menyusun 10 Soal Kuis...</h3>
+        <p class="text-xs text-slate-500 mt-1">Menggunakan model Gemini Free terbaru untuk mengekstrak intisari dan pembahasan soal.</p>
+      </div>
+
+      <!-- Result Container -->
+      <div id="resultContainer" class="hidden space-y-4">
+
+        <!-- Action Bar & Mode Switcher -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 space-y-2.5 no-print">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              <button onclick="switchTab('summary')" id="tabSummary" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm transition">
+                <i class="fa-solid fa-list-check mr-1"></i> Ringkasan Materi
+              </button>
+              <button onclick="switchTab('interactive')" id="tabInteractive" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                <i class="fa-solid fa-gamepad mr-1"></i> Kuis Interaktif (10)
+              </button>
+              <button onclick="switchTab('paper')" id="tabPaper" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                <i class="fa-solid fa-file-lines mr-1"></i> Lembar Soal & Kunci
+              </button>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="speakSummary()" id="ttsBtn" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition" title="Bacakan Ringkasan (TTS)">
+                <i class="fa-solid fa-volume-high"></i> Suara
+              </button>
+              <button onclick="copyAllOutput()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition" title="Salin Teks">
+                <i class="fa-regular fa-copy"></i> Salin
+              </button>
+            </div>
+          </div>
+
+          <!-- Baris Ekspor Dokumen (Word, Excel, PDF) -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <i class="fa-solid fa-download mr-1"></i> Ekspor Dokumen:
+            </span>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button onclick="exportToWord()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-word"></i> Unduh Word (.doc)
+              </button>
+              <button onclick="exportToExcel()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-excel"></i> Unduh Excel (.csv)
+              </button>
+              <button onclick="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-print"></i> Cetak / PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 1: RINGKASAN MATERI -->
+        <div id="viewSummary" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4 card-print">
+          <div class="border-b border-slate-100 pb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Ringkasan Eksekutif Materi</span>
+            <h2 id="summaryTitle" class="text-xl font-extrabold text-slate-900 mt-0.5">-</h2>
+          </div>
+
+          <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-800 mb-1">Gambaran Umum (Intisari)</h4>
+            <p id="summaryOverview" class="text-sm text-slate-700 leading-relaxed"></p>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Poin-Poin Penting Utama</h4>
+            <ul id="summaryKeyPoints" class="space-y-2 text-sm text-slate-700"></ul>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Definisi & Istilah Kunci</h4>
+            <div id="summaryTerms" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+          </div>
+
+          <!-- Box Sumber Pencarian Web (Grounding Sources) -->
+          <div id="groundingSourcesBox" class="hidden pt-3 border-t border-slate-200/80">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-2 flex items-center gap-1.5">
+              <i class="fa-brands fa-google"></i> Sumber Referensi Pencarian Web (Google Search Grounding)
+            </h4>
+            <div id="groundingSourcesList" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <!-- TAB 2: KUIS INTERAKTIF 10 SOAL -->
+        <div id="viewInteractive" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5 no-print">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Uji Pemahaman Interaktif (10 Pertanyaan)</h3>
+              <p class="text-xs text-slate-500">Pilih atau isi jawaban Anda, lalu klik Periksa Skor untuk melihat pembahasan.</p>
+            </div>
+            <div id="scoreBadge" class="hidden px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white font-extrabold text-sm">
+              Skor: 0 / 100
+            </div>
+          </div>
+
+          <div id="interactiveQuizList" class="space-y-5"></div>
+
+          <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button onclick="resetInteractiveQuiz()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100">
+              Ulangi Kuis
+            </button>
+            <button onclick="checkInteractiveScore()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm">
+              <i class="fa-solid fa-check-double mr-1"></i> Periksa Jawaban & Skor
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: LEMBAR SOAL & KUNCI JAWABAN (SIAP CETAK) -->
+        <div id="viewPaper" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-6 card-print">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div>
+              <h3 class="font-extrabold text-slate-900 text-base">Daftar 10 Pertanyaan Kuis & Kunci Jawaban</h3>
+              <p class="text-xs text-slate-500">Format siap salin dan cetak untuk evaluasi pembelajaran</p>
+            </div>
+            <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer no-print">
+              <input type="checkbox" id="toggleAnswerKey" checked onchange="toggleAnswerKeyVisibility()" class="rounded text-indigo-600" />
+              Tampilkan Kunci & Pembahasan
+            </label>
+          </div>
+
+          <div id="paperQuestionsList" class="space-y-4"></div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 px-4 text-center text-xs text-slate-500 no-print mt-8">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>&copy; 2026 <strong>Arraihan Academy (SWK)</strong>. All rights reserved.</p>
+      <p class="text-slate-400">Engineered with Gemini 3.8 Flash Free Tier & Live Web Search Grounding</p>
+    </div>
+  </footer>
+
+  <!-- MODAL PENGATURAN API KEY & MODEL GEMINI FREE TERBARU -->
+  <div id="apiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-key text-indigo-600"></i> Konfigurasi Gemini Free API
+        </h3>
+        <button onclick="closeApiModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 leading-relaxed">
+        Gunakan API Key gratis dari <strong>Google AI Studio</strong> (tanpa akun billing). Key Anda disimpan aman di <code>localStorage</code> browser ini.
+      </p>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Google Gemini API Key (Free Tier)</label>
+        <input
+          type="password"
+          id="apiKeyInput"
+          placeholder="AIzaSy..."
+          class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono outline-none focus:border-indigo-600"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Model Gemini Free Tier Terbaru</label>
+        <select id="modelSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold bg-white">
+          <option value="gemini-3.8-flash">gemini-3.8-flash (Flagship Free Terbaru + Web Search)</option>
+          <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Super Cepat & Kuota Harian Tinggi)</option>
+          <option value="gemini-3.6-flash">gemini-3.6-flash (Stabil & Multimodal Free)</option>
+          <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Alternatif Ringan)</option>
+        </select>
+        <p class="text-[11px] text-slate-400 mt-1">
+          *Jika kuota salah satu model sedang penuh, sistem otomatis melakukan fallback ke model Free Tier berikutnya.
+        </p>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeApiModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
+        <button onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">Simpan Konfigurasi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL LISENSI & TRIAL LOCK -->
+  <div id="licenseModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+            <i class="fa-solid fa-award text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Aktivasi Lisensi Resmi</h3>
+            <p class="text-[11px] text-slate-500">Arraihan Academy (SWK) Licensing System</p>
+          </div>
+        </div>
+        <button id="closeLicenseBtn" onclick="closeLicenseModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div id="licenseModalAlert" class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 leading-relaxed">
+        Masa uji coba (Demo 5 Hari) sedang berjalan. Masukkan <strong>Serial Key</strong> dari Keygen Arraihan Academy untuk mengaktifkan lisensi penuh permanen.
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Device ID Perangkat Anda</span>
+          <span id="modalDeviceId" class="font-mono font-bold text-sm text-slate-900 select-all">---</span>
+        </div>
+        <button onclick="copyDeviceId()" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold hover:bg-slate-100">
+          <i class="fa-regular fa-copy mr-1"></i> Salin ID
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Pengguna / Instansi</label>
+        <input
+          type="text"
+          id="licenseUserInput"
+          placeholder="Contoh: LKP Ar-Raihan / Puskesmas / Sekolah"
+          class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs outline-none focus:border-indigo-600"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Kode Lisensi (Serial Key)</label>
+        <input
+          type="text"
+          id="licenseKeyInput"
+          placeholder="ARRAIHAN-XXXX-XXXX-XXXX"
+          class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono uppercase outline-none focus:border-indigo-600"
+        />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="activateLicense()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-md">
+          <i class="fa-solid fa-unlock-keyhole mr-1"></i> Verifikasi & Aktifkan Lisensi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. SISTEM LISENSI & DEMO 5 HARI (SINKRON DENGAN KEYGEN ARRAIHAN ACADEMY)
+    // =========================================================================
+    const APP_SALT = "ARRAIHAN_SWK_QUIZ_PRO_2026";
+    const TRIAL_DAYS = 5;
+    const DEFAULT_MODEL = "gemini-3.8-flash";
+    const FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash"];
+
+    const STORAGE_KEYS = {
+      DEVICE_ID: "swk_sq_device_id",
+      FIRST_RUN: "swk_sq_first_run",
+      LICENSE_KEY: "swk_sq_license_key",
+      LICENSE_USER: "swk_sq_license_user",
+      API_KEY: "swk_sq_gemini_api_key",
+      MODEL: "swk_sq_gemini_model_v2",
+      HISTORY: "swk_sq_history_v1"
+    };
+
+    let currentData = null;
+    let isTrialExpired = false;
+
+    function getOrCreateDeviceId() {
+      let devId = localStorage.getItem(STORAGE_KEYS.DEVICE_ID);
+      if (!devId) {
+        const rand = Math.random().toString(36).substring(2, 6).toUpperCase() +
+                     Math.random().toString(36).substring(2, 6).toUpperCase();
+        devId = "SWK-" + rand;
+        localStorage.setItem(STORAGE_KEYS.DEVICE_ID, devId);
+      }
+      return devId;
+    }
+
+    function generateValidSerial(deviceId) {
+      const cleanId = deviceId.trim().toUpperCase();
+      const raw = cleanId + "::" + APP_SALT;
+      let h1 = 0xdeadbeef ^ raw.length;
+      let h2 = 0x41c6ce57 ^ raw.length;
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      const hex1 = (h1 >>> 0).toString(16).toUpperCase().padStart(8, "0");
+      const hex2 = (h2 >>> 0).toString(16).toUpperCase().padStart(8, "0");
+      return `ARRAIHAN-${hex1.slice(0, 4)}-${hex1.slice(4, 8)}-${hex2.slice(0, 4)}`;
+    }
+
+    function checkLicenseStatus() {
+      const devId = getOrCreateDeviceId();
+      document.getElementById("deviceIdDisplay").textContent = devId;
+      document.getElementById("modalDeviceId").textContent = devId;
+
+      let firstRun = localStorage.getItem(STORAGE_KEYS.FIRST_RUN);
+      if (!firstRun) {
+        firstRun = Date.now().toString();
+        localStorage.setItem(STORAGE_KEYS.FIRST_RUN, firstRun);
+      }
+
+      const savedKey = localStorage.getItem(STORAGE_KEYS.LICENSE_KEY) || "";
+      const savedUser = localStorage.getItem(STORAGE_KEYS.LICENSE_USER) || "Lisensi Resmi";
+      const expectedKey = generateValidSerial(devId);
+      const badge = document.getElementById("licenseBadge");
+
+      if (savedKey.trim().toUpperCase() === expectedKey) {
+        isTrialExpired = false;
+        badge.className = "bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2.5 py-0.5 rounded-full font-semibold";
+        badge.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Full Version (${savedUser})`;
+        return true;
+      }
+
+      const elapsedMs = Date.now() - parseInt(firstRun, 10);
+      const totalTrialMs = TRIAL_DAYS * 24 * 60 * 60 * 1000;
+      const remainingMs = totalTrialMs - elapsedMs;
+
+      if (remainingMs > 0) {
+        isTrialExpired = false;
+        const daysLeft = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.ceil(remainingMs / (1000 * 60 * 60));
+        const label = daysLeft > 1 ? `${daysLeft} Hari` : `${hoursLeft} Jam`;
+        badge.className = "bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-semibold";
+        badge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Demo Aktif (Sisa ${label})`;
+        return true;
+      } else {
+        isTrialExpired = true;
+        badge.className = "bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-semibold";
+        badge.innerHTML = `<i class="fa-solid fa-lock mr-1"></i> Masa Demo 5 Hari Habis`;
+        openLicenseModal(true);
+        return false;
+      }
+    }
+
+    function openLicenseModal(forceLock = false) {
+      const modal = document.getElementById("licenseModal");
+      const closeBtn = document.getElementById("closeLicenseBtn");
+      const alertBox = document.getElementById("licenseModalAlert");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+      if (forceLock || isTrialExpired) {
+        closeBtn.classList.add("hidden");
+        alertBox.className = "p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 leading-relaxed font-medium";
+        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Masa Demo 5 Hari Telah Berakhir!</strong> Silakan salin <strong>Device ID</strong> Anda dan gunakan aplikasi Keygen Arraihan Academy untuk membuka akses penuh.`;
+      } else {
+        closeBtn.classList.remove("hidden");
+      }
+    }
+
+    function closeLicenseModal() {
+      if (isTrialExpired) return;
+      const modal = document.getElementById("licenseModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function copyDeviceId() {
+      const devId = getOrCreateDeviceId();
+      navigator.clipboard.writeText(devId);
+      alert("Device ID berhasil disalin: " + devId);
+    }
+
+    function activateLicense() {
+      const devId = getOrCreateDeviceId();
+      const user = document.getElementById("licenseUserInput").value.trim() || "VIP Member";
+      const inputKey = document.getElementById("licenseKeyInput").value.trim().toUpperCase();
+      const validKey = generateValidSerial(devId);
+
+      if (inputKey === validKey) {
+        localStorage.setItem(STORAGE_KEYS.LICENSE_KEY, inputKey);
+        localStorage.setItem(STORAGE_KEYS.LICENSE_USER, user);
+        checkLicenseStatus();
+        document.getElementById("licenseModal").classList.add("hidden");
+        document.getElementById("licenseModal").classList.remove("flex");
+        alert("Selamat! Lisensi Arraihan Academy (SWK) berhasil diaktifkan secara permanen.");
+      } else {
+        alert("Kode Lisensi tidak valid untuk Device ID ini! Pastikan Serial Key dibuat melalui Keygen Resmi Arraihan Academy.");
+      }
+    }
+
+    // =========================================================================
+    // 2. KONFIGURASI API KEY & MODEL GEMINI FREE TERBARU
+    // =========================================================================
+    function updateApiButtonUI() {
+      const key = localStorage.getItem(STORAGE_KEYS.API_KEY);
+      const model = localStorage.getItem(STORAGE_KEYS.MODEL) || DEFAULT_MODEL;
+      const statusText = document.getElementById("apiStatusText");
+      const modelPill = document.getElementById("activeModelPill");
+
+      modelPill.textContent = model;
+      if (key && key.startsWith("AIza")) {
+        statusText.innerHTML = `<span class="text-emerald-600 font-bold">API Siap (${model})</span>`;
+      } else {
+        statusText.innerHTML = `<span class="text-amber-600 font-bold">Atur API Key</span>`;
+      }
+    }
+
+    function openApiModal() {
+      document.getElementById("apiKeyInput").value = localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+      document.getElementById("modelSelect").value = localStorage.getItem(STORAGE_KEYS.MODEL) || DEFAULT_MODEL;
+      const modal = document.getElementById("apiModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeApiModal() {
+      const modal = document.getElementById("apiModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById("apiKeyInput").value.trim();
+      const model = document.getElementById("modelSelect").value;
+      localStorage.setItem(STORAGE_KEYS.API_KEY, key);
+      localStorage.setItem(STORAGE_KEYS.MODEL, model);
+      updateApiButtonUI();
+      closeApiModal();
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById("materialInput").value.length;
+      document.getElementById("charCount").textContent = len.toLocaleString("id-ID") + " karakter";
+    }
+
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      document.getElementById("fileNameLabel").textContent = `Memproses: ${file.name}...`;
+
+      try {
+        if (file.name.toLowerCase().endsWith(".pdf")) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let extractedText = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const strings = content.items.map(item => item.str);
+            extractedText += strings.join(" ") + "\n\n";
+          }
+          document.getElementById("materialInput").value = extractedText.trim();
+        } else {
+          const text = await file.text();
+          document.getElementById("materialInput").value = text.trim();
+        }
+        document.getElementById("fileNameLabel").textContent = `Berhasil dimuat: ${file.name}`;
+        updateCharCount();
+      } catch (err) {
+        alert("Gagal membaca file: " + err.message);
+        document.getElementById("fileNameLabel").textContent = "Klik untuk memilih file materi";
+      }
+    }
+
+    // =========================================================================
+    // 3. ENGINE AI: GEMINI FREE TIER TERBARU + LIVE GOOGLE SEARCH GROUNDING
+    // =========================================================================
+    function extractJsonFromText(text) {
+      if (!text) throw new Error("Respons AI kosong.");
+      const cleaned = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+      }
+      return JSON.parse(cleaned);
+    }
+
+    async function callGeminiWithFallback(apiKey, preferredModel, payload) {
+      const modelsToTry = [preferredModel, ...FALLBACK_MODELS.filter(m => m !== preferredModel)];
+      let lastError = null;
+
+      for (const modelName of modelsToTry) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            }
+          );
+          const result = await response.json();
+          if (result.error) {
+            throw new Error(`[${modelName}] ${result.error.message}`);
+          }
+          return { result, usedModel: modelName };
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      throw lastError;
+    }
+
+    async function generateSummaryAndQuiz() {
+      if (!checkLicenseStatus()) return;
+
+      const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
+      if (!apiKey) {
+        openApiModal();
+        alert("Silakan masukkan Google Gemini API Key (Free Tier) Anda terlebih dahulu.");
+        return;
+      }
+
+      const rawText = document.getElementById("materialInput").value.trim();
+      if (!rawText || rawText.length < 4) {
+        alert("Mohon ketikkan topik pencarian, alamat URL, atau masukkan teks materi terlebih dahulu.");
+        return;
+      }
+
+      const useWebSearch = document.getElementById("useWebSearchToggle").checked;
+      const difficulty = document.getElementById("difficultySelect").value;
+      const qType = document.getElementById("questionTypeSelect").value;
+      const preferredModel = localStorage.getItem(STORAGE_KEYS.MODEL) || DEFAULT_MODEL;
+
+      document.getElementById("emptyState").classList.add("hidden");
+      document.getElementById("resultContainer").classList.add("hidden");
+      document.getElementById("loadingState").classList.remove("hidden");
+      document.getElementById("loadingTitle").textContent = useWebSearch
+        ? `Menelusuri Google Search & Menyusun 10 Soal dengan ${preferredModel}...`
+        : `Menganalisis Materi & Menyusun 10 Soal dengan ${preferredModel}...`;
+      document.getElementById("generateBtn").disabled = true;
+
+      const formatInstruction = qType === "pg"
+        ? "Semua 10 pertanyaan WAJIB berbentuk Pilihan Ganda (type: 'pg') dengan 4 opsi (A, B, C, D)."
+        : "Pertanyaan nomor 1 sampai 7 berbentuk Pilihan Ganda (type: 'pg') dengan 4 opsi, dan nomor 8 sampai 10 berbentuk Esai/Uraian Terbuka (type: 'essay', options: []).";
+
+      const hasUrl = /https?:\/\/[^\s]+/i.test(rawText);
+
+      const prompt = `Anda adalah Sistem Ahli Pembuat Ringkasan Materi & Kuis Profesional.
+Tugas Anda:
+1. ${useWebSearch ? "Gunakan Google Search Grounding (dan pembacaan URL jika ada link) untuk mencari data, fakta, regulasi, atau referensi terbaru yang relevan dengan masukan pengguna." : "Analisis masukan materi berikut secara mendalam."}
+2. Susun ringkasan terstruktur dan ringkas yang menyoroti gambaran umum, poin-poin penting utama, serta definisi/istilah kunci.
+3. Buat TEPAT 10 pertanyaan kuis yang relevan (tingkat kesulitan: ${difficulty}) berdasarkan materi tersebut. ${formatInstruction}
+4. Sertakan kunci jawaban yang akurat dan penjelasan/pembahasan yang jelas untuk kesepuluh pertanyaan tersebut.
+
+PENTING: Kembalikan HANYA objek JSON valid (tanpa teks pengantar di luar JSON) dengan skema persis berikut:
+{
+  "title": "Judul Materi",
+  "overview": "Paragraf ringkasan eksekutif (intisari materi)",
+  "keyPoints": ["Poin penting 1", "Poin penting 2", "Poin penting 3", "Poin penting 4", "Poin penting 5"],
+  "keyTerms": [
+    {"term": "Istilah 1", "definition": "Penjelasan singkat dan padat"}
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "type": "pg",
+      "cognitiveLevel": "Pemahaman Konsep / Aplikasi / Analisis",
+      "question": "Teks pertanyaan...",
+      "options": ["A. Pilihan satu", "B. Pilihan dua", "C. Pilihan tiga", "D. Pilihan empat"],
+      "correctAnswer": "A",
+      "explanation": "Penjelasan lengkap mengapa jawaban tersebut benar berdasarkan materi."
+    }
+  ]
+}
+
+MASUKAN TOPIK / URL / MATERI SUMBER:
+"""
+${rawText.slice(0, 28000)}
+"""`;
+
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3
+        }
+      };
+
+      if (useWebSearch) {
+        payload.tools = [{ google_search: {} }];
+        if (hasUrl) {
+          payload.tools.push({ url_context: {} });
+        }
+      } else {
+        payload.generationConfig.responseMimeType = "application/json";
+      }
+
+      try {
+        const { result, usedModel } = await callGeminiWithFallback(apiKey, preferredModel, payload);
+        document.getElementById("activeModelPill").textContent = usedModel;
+
+        const candidate = result.candidates?.[0];
+        const rawResponseText = (candidate?.content?.parts || []).map(p => p.text || "").join("\n");
+        const parsed = extractJsonFromText(rawResponseText);
+
+        const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
+        const webSources = [];
+        groundingChunks.forEach(chunk => {
+          if (chunk.web && chunk.web.uri) {
+            webSources.push({
+              title: chunk.web.title || chunk.web.uri,
+              uri: chunk.web.uri
+            });
+          }
+        });
+        parsed.webSources = webSources;
+
+        currentData = parsed;
+        renderOutput(parsed);
+        saveToHistory(parsed);
+      } catch (err) {
+        alert("Terjadi kesalahan saat memproses AI: " + err.message);
+        document.getElementById("emptyState").classList.remove("hidden");
+      } finally {
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("generateBtn").disabled = false;
+      }
+    }
+
+    // =========================================================================
+    // 4. RENDER HASIL RINGKASAN, SUMBER WEB, KUIS INTERAKTIF & LEMBAR SOAL
+    // =========================================================================
+    function renderOutput(data) {
+      document.getElementById("resultContainer").classList.remove("hidden");
+      document.getElementById("summaryTitle").textContent = data.title || "Ringkasan Materi";
+      document.getElementById("summaryOverview").textContent = data.overview || "-";
+
+      const kpList = document.getElementById("summaryKeyPoints");
+      kpList.innerHTML = (data.keyPoints || []).map(pt => `
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-check text-indigo-600 mt-1 shrink-0"></i>
+          <span>${pt}</span>
+        </li>
+      `).join("");
+
+      const termsGrid = document.getElementById("summaryTerms");
+      termsGrid.innerHTML = (data.keyTerms || []).map(item => `
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <span class="font-bold text-xs text-indigo-700 block">${item.term}</span>
+          <span class="text-xs text-slate-600 mt-0.5 block leading-relaxed">${item.definition}</span>
+        </div>
+      `).join("");
+
+      const sourcesBox = document.getElementById("groundingSourcesBox");
+      const sourcesList = document.getElementById("groundingSourcesList");
+      if (data.webSources && data.webSources.length > 0) {
+        sourcesBox.classList.remove("hidden");
+        sourcesList.innerHTML = data.webSources.map(src => `
+          <a href="${src.uri}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full font-medium transition">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            <span class="truncate max-w-[240px]">${src.title}</span>
+          </a>
+        `).join("");
+      } else {
+        sourcesBox.classList.add("hidden");
+        sourcesList.innerHTML = "";
+      }
+
+      const interactiveList = document.getElementById("interactiveQuizList");
+      document.getElementById("scoreBadge").classList.add("hidden");
+
+      interactiveList.innerHTML = (data.questions || []).map((q, idx) => {
+        const isPg = q.type === "pg" && Array.isArray(q.options) && q.options.length > 0;
+        const optionsHtml = isPg
+          ? q.options.map((opt, oIdx) => {
+              const letter = ["A", "B", "C", "D"][oIdx] || opt.charAt(0);
+              return `
+                <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-indigo-50/40 cursor-pointer text-xs transition">
+                  <input type="radio" name="q_${idx}" value="${letter}" class="mt-0.5 text-indigo-600" />
+                  <span class="text-slate-700">${opt}</span>
+                </label>
+              `;
+            }).join("")
+          : `<textarea id="essay_${idx}" rows="2" placeholder="Ketik jawaban uraian Anda..." class="w-full rounded-xl border border-slate-300 p-2.5 text-xs outline-none focus:border-indigo-600"></textarea>`;
+
+        return `
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/40 space-y-2.5" id="qcard_${idx}">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-indigo-600 uppercase">Pertanyaan ${q.number || idx + 1}</span>
+              <span class="text-[11px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-md font-medium">${q.cognitiveLevel || "Pemahaman"}</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-800">${q.question}</p>
+            <div class="space-y-1.5 pt-1">${optionsHtml}</div>
+            <div id="feedback_${idx}" class="hidden p-3 rounded-xl text-xs mt-2"></div>
+          </div>
+        `;
+      }).join("");
+
+      const paperList = document.getElementById("paperQuestionsList");
+      paperList.innerHTML = (data.questions || []).map((q, idx) => {
+        const optionsText = (q.options || []).map(o => `<div class="ml-4 text-xs text-slate-700 py-0.5">${o}</div>`).join("");
+        return `
+          <div class="p-4 rounded-xl border border-slate-200 space-y-2">
+            <div class="flex justify-between items-start gap-2">
+              <p class="text-sm font-bold text-slate-800">${q.number || idx + 1}. ${q.question}</p>
+              <span class="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded shrink-0">${q.cognitiveLevel || "Kuis"}</span>
+            </div>
+            ${optionsText}
+            <div class="answer-key-box pt-2 mt-2 border-t border-dashed border-slate-200 text-xs bg-emerald-50/60 p-3 rounded-lg">
+              <p class="font-bold text-emerald-800"><i class="fa-solid fa-key mr-1"></i> Kunci Jawaban: ${q.correctAnswer}</p>
+              <p class="text-slate-600 mt-1"><strong class="text-slate-700">Pembahasan:</strong> ${q.explanation}</p>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      switchTab("summary");
+    }
+
+    function checkInteractiveScore() {
+      if (!currentData || !currentData.questions) return;
+      let correctCount = 0;
+      const total = currentData.questions.length;
+
+      currentData.questions.forEach((q, idx) => {
+        const fb = document.getElementById(`feedback_${idx}`);
+        fb.classList.remove("hidden");
+
+        if (q.type === "pg" && q.options && q.options.length > 0) {
+          const selected = document.querySelector(`input[name="q_${idx}"]:checked`);
+          const userAns = selected ? selected.value.toUpperCase() : "";
+          const cleanKey = (q.correctAnswer || "").trim().charAt(0).toUpperCase();
+
+          if (userAns === cleanKey) {
+            correctCount++;
+            fb.className = "p-3 rounded-xl text-xs mt-2 bg-emerald-50 border border-emerald-200 text-emerald-900";
+            fb.innerHTML = `<strong><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Benar! (Kunci: ${q.correctAnswer})</strong><br><span class="block mt-1 text-slate-600">${q.explanation}</span>`;
+          } else {
+            fb.className = "p-3 rounded-xl text-xs mt-2 bg-rose-50 border border-rose-200 text-rose-900";
+            fb.innerHTML = `<strong><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> Kurang Tepat. Kunci Jawaban: ${q.correctAnswer}</strong><br><span class="block mt-1 text-slate-600">${q.explanation}</span>`;
+          }
+        } else {
+          const essayVal = (document.getElementById(`essay_${idx}`)?.value || "").trim();
+          if (essayVal.length > 5) correctCount++;
+          fb.className = "p-3 rounded-xl text-xs mt-2 bg-sky-50 border border-sky-200 text-sky-900";
+          fb.innerHTML = `<strong><i class="fa-solid fa-lightbulb text-sky-600 mr-1"></i> Pedoman Kunci Jawaban:</strong> ${q.correctAnswer}<br><span class="block mt-1 text-slate-600">${q.explanation}</span>`;
+        }
+      });
+
+      const finalScore = Math.round((correctCount / total) * 100);
+      const badge = document.getElementById("scoreBadge");
+      badge.classList.remove("hidden");
+      badge.textContent = `Skor Akhir: ${finalScore} / 100 (${correctCount}/${total} Soal)`;
+      badge.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function resetInteractiveQuiz() {
+      if (currentData) renderOutput(currentData);
+      switchTab("interactive");
+    }
+
+    function toggleAnswerKeyVisibility() {
+      const show = document.getElementById("toggleAnswerKey").checked;
+      document.querySelectorAll(".answer-key-box").forEach(el => {
+        el.style.display = show ? "block" : "none";
+      });
+    }
+
+    function switchTab(tab) {
+      const views = {
+        summary: document.getElementById("viewSummary"),
+        interactive: document.getElementById("viewInteractive"),
+        paper: document.getElementById("viewPaper")
+      };
+      const tabs = {
+        summary: document.getElementById("tabSummary"),
+        interactive: document.getElementById("tabInteractive"),
+        paper: document.getElementById("tabPaper")
+      };
+
+      Object.keys(views).forEach(k => {
+        if (k === tab) {
+          views[k].classList.remove("hidden");
+          tabs[k].className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm transition";
+        } else {
+          views[k].classList.add("hidden");
+          tabs[k].className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+        }
+      });
+    }
+
+    // =========================================================================
+    // 5. EKSPOR KE MICROSOFT WORD (.DOC) & MICROSOFT EXCEL (.CSV)
+    // =========================================================================
+    function sanitizeFilename(name) {
+      return (name || "Ringkasan_Kuis").replace(/[^a-zA-Z0-9_\-\s]/g, "").trim().replace(/\s+/g, "_").slice(0, 50);
+    }
+
+    function exportToWord() {
+      if (!currentData) return;
+      const title = currentData.title || "Ringkasan Materi & Evaluasi Kuis";
+      const fileName = `${sanitizeFilename(title)}_ArraihanAcademy.doc`;
+      const dateStr = new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
+
+      const keyPointsHtml = (currentData.keyPoints || []).map(p => `<li style="margin-bottom:6px;">${p}</li>`).join("");
+      const termsRowsHtml = (currentData.keyTerms || []).map(t => `
+        <tr>
+          <td style="border:1px solid #cbd5e1; padding:8px; font-weight:bold; width:30%; background:#f8fafc;">${t.term}</td>
+          <td style="border:1px solid #cbd5e1; padding:8px;">${t.definition}</td>
+        </tr>
+      `).join("");
+
+      const questionsHtml = (currentData.questions || []).map((q, idx) => {
+        const opts = (q.options || []).map(o => `<p style="margin:3px 0 3px 18px;">${o}</p>`).join("");
+        return `
+          <div style="margin-bottom:14px;">
+            <p style="margin:0 0 4px 0;"><strong>${q.number || idx + 1}. ${q.question}</strong> <em>[${q.cognitiveLevel || "Pemahaman"}]</em></p>
+            ${opts || `<p style="margin:6px 0 6px 18px; color:#64748b;"><em>Jawaban Uraian: ...................................................................................................................</em></p>`}
+          </div>
+        `;
+      }).join("");
+
+      const answerKeyRowsHtml = (currentData.questions || []).map((q, idx) => `
+        <tr>
+          <td style="border:1px solid #cbd5e1; padding:7px; text-align:center; font-weight:bold; width:8%;">${q.number || idx + 1}</td>
+          <td style="border:1px solid #cbd5e1; padding:7px; font-weight:bold; color:#047857; width:22%;">${q.correctAnswer}</td>
+          <td style="border:1px solid #cbd5e1; padding:7px;">${q.explanation}</td>
+        </tr>
+      `).join("");
+
+      const wordDocument = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset="utf-8">
+          <title>${title}</title>
+          <style>
+            body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 11pt; color: #1e293b; line-height: 1.45; }
+            h1 { font-size: 16pt; color: #1e1b4b; margin-bottom: 4px; }
+            h2 { font-size: 13pt; color: #312e81; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-top: 18px; }
+            table { border-collapse: collapse; width: 100%; margin-top: 8px; margin-bottom: 14px; }
+          </style>
+        </head>
+        <body>
+          <div style="border-bottom: 3px double #1e1b4b; padding-bottom: 8px; margin-bottom: 16px;">
+            <p style="margin:0; font-size:9pt; color:#475569; text-transform:uppercase; letter-spacing:1px;">MODUL RINGKASAN MATERI & EVALUASI — ARRAIHAN ACADEMY (SWK)</p>
+            <h1>${title}</h1>
+            <p style="margin:0; font-size:9.5pt; color:#64748b;">Tanggal Penyusunan: ${dateStr}</p>
+          </div>
+
+          <h2>A. Ringkasan Eksekutif (Intisari Materi)</h2>
+          <p style="text-align:justify;">${currentData.overview || "-"}</p>
+
+          <h2>B. Poin-Poin Penting Utama</h2>
+          <ul>${keyPointsHtml}</ul>
+
+          <h2>C. Definisi & Istilah Kunci</h2>
+          <table>
+            <thead>
+              <tr style="background:#e0e7ff;">
+                <th style="border:1px solid #cbd5e1; padding:8px; text-align:left;">Istilah / Konsep</th>
+                <th style="border:1px solid #cbd5e1; padding:8px; text-align:left;">Definisi & Penjelasan</th>
+              </tr>
+            </thead>
+            <tbody>${termsRowsHtml}</tbody>
+          </table>
+
+          <br clear="all" style="page-break-before:always" />
+
+          <h2>D. Lembar Evaluasi Kuis (10 Pertanyaan)</h2>
+          <p style="font-size:10pt; color:#475569;">Nama Peserta : .................................................... &nbsp;&nbsp;&nbsp; Nilai : ....................</p>
+          ${questionsHtml}
+
+          <br clear="all" style="page-break-before:always" />
+
+          <h2>E. Kunci Jawaban & Pembahasan Lengkap</h2>
+          <table>
+            <thead>
+              <tr style="background:#d1fae5;">
+                <th style="border:1px solid #cbd5e1; padding:7px; text-align:center;">No</th>
+                <th style="border:1px solid #cbd5e1; padding:7px; text-align:left;">Kunci Jawaban</th>
+                <th style="border:1px solid #cbd5e1; padding:7px; text-align:left;">Pembahasan / Rasional</th>
+              </tr>
+            </thead>
+            <tbody>${answerKeyRowsHtml}</tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(["\ufeff", wordDocument], { type: "application/msword;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportToExcel() {
+      if (!currentData) return;
+      const title = currentData.title || "Bank_Soal_Kuis";
+      const fileName = `${sanitizeFilename(title)}_ArraihanAcademy.csv`;
+
+      const escapeCsv = (val) => {
+        const str = String(val ?? "").replace(/\r?\n|\r/g, " ");
+        return `"${str.replace(/"/g, '""')}"`;
+      };
+
+      const rows = [];
+      // Bagian 1: Metadata & Ringkasan
+      rows.push(["JUDUL MATERI", currentData.title || "-"]);
+      rows.push(["INTISARI MATERI", currentData.overview || "-"]);
+      rows.push([]);
+      rows.push(["POIN PENTING UTAMA"]);
+      (currentData.keyPoints || []).forEach((pt, i) => rows.push([`Poin ${i + 1}`, pt]));
+      rows.push([]);
+      rows.push(["ISTILAH KUNCI", "DEFINISI"]);
+      (currentData.keyTerms || []).forEach(t => rows.push([t.term, t.definition]));
+      rows.push([]);
+
+      // Bagian 2: Tabel 10 Soal Kuis
+      rows.push([
+        "No",
+        "Tipe Soal",
+        "Level Kognitif",
+        "Pertanyaan",
+        "Opsi A",
+        "Opsi B",
+        "Opsi C",
+        "Opsi D",
+        "Kunci Jawaban",
+        "Pembahasan Lengkap"
+      ]);
+
+      (currentData.questions || []).forEach((q, idx) => {
+        const opts = q.options || [];
+        rows.push([
+          q.number || idx + 1,
+          (q.type || "pg").toUpperCase(),
+          q.cognitiveLevel || "Pemahaman",
+          q.question || "",
+          opts[0] || "-",
+          opts[1] || "-",
+          opts[2] || "-",
+          opts[3] || "-",
+          q.correctAnswer || "",
+          q.explanation || ""
+        ]);
+      });
+
+      const csvContent = "\uFEFF" + rows.map(r => r.map(escapeCsv).join(",")).join("\r\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // =========================================================================
+    // 6. FITUR PENDUKUNG: TEXT-TO-SPEECH (TTS), SALIN TEKS & RIWAYAT
+    // =========================================================================
+    function speakSummary() {
+      if (!currentData) return;
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        document.getElementById("ttsBtn").innerHTML = `<i class="fa-solid fa-volume-high"></i> Suara`;
+        return;
+      }
+      const textToRead = `${currentData.title}. ${currentData.overview}. Poin penting: ${(currentData.keyPoints || []).join(". ")}`;
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      utterance.lang = "id-ID";
+      utterance.rate = 1.0;
+      utterance.onend = () => {
+        document.getElementById("ttsBtn").innerHTML = `<i class="fa-solid fa-volume-high"></i> Suara`;
+      };
+      document.getElementById("ttsBtn").innerHTML = `<i class="fa-solid fa-stop"></i> Stop`;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function copyAllOutput() {
+      if (!currentData) return;
+      let txt = `RINGKASAN MATERI: ${currentData.title}\n\n`;
+      txt += `INTISARI:\n${currentData.overview}\n\n`;
+      txt += `POIN PENTING:\n${(currentData.keyPoints || []).map(p => `- ${p}`).join("\n")}\n\n`;
+      txt += `ISTILAH KUNCI:\n${(currentData.keyTerms || []).map(t => `* ${t.term}: ${t.definition}`).join("\n")}\n\n`;
+      txt += `10 PERTANYAAN KUIS & KUNCI JAWABAN:\n`;
+      (currentData.questions || []).forEach((q, i) => {
+        txt += `\n${i + 1}. ${q.question}\n`;
+        if (q.options && q.options.length) txt += q.options.join("\n") + "\n";
+        txt += `Kunci Jawaban: ${q.correctAnswer}\nPembahasan: ${q.explanation}\n`;
+      });
+      navigator.clipboard.writeText(txt);
+      alert("Seluruh ringkasan, 10 soal kuis, dan kunci jawaban berhasil disalin ke clipboard!");
+    }
+
+    function saveToHistory(data) {
+      let list = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || "[]");
+      list.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+        data: data
+      });
+      list = list.slice(0, 10);
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(list));
+      renderHistoryList();
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById("historyList");
+      const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || "[]");
+      if (list.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 italic text-xs">Belum ada riwayat materi.</p>`;
+        return;
+      }
+      container.innerHTML = list.map((item, idx) => `
+        <div onclick="loadHistoryItem(${idx})" class="p-2 rounded-lg border border-slate-100 hover:bg-indigo-50/50 cursor-pointer flex justify-between items-center transition">
+          <span class="font-semibold text-slate-700 truncate max-w-[200px]">${item.data.title || "Materi Tanpa Judul"}</span>
+          <span class="text-[10px] text-slate-400 shrink-0">${item.date}</span>
+        </div>
+      `).join("");
+    }
+
+    function loadHistoryItem(idx) {
+      const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || "[]");
+      if (list[idx]) {
+        currentData = list[idx].data;
+        document.getElementById("emptyState").classList.add("hidden");
+        renderOutput(currentData);
+      }
+    }
+
+    function clearHistory() {
+      localStorage.removeItem(STORAGE_KEYS.HISTORY);
+      renderHistoryList();
+    }
+
+    function resetAll() {
+      document.getElementById("materialInput").value = "";
+      document.getElementById("fileNameLabel").textContent = "Klik untuk memilih file materi (Opsional)";
+      updateCharCount();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      checkLicenseStatus();
+      updateApiButtonUI();
+      renderHistoryList();
+    });
+  </script>
+</body>
+</html>

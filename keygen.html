@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Keygen — Summary & Quiz Generator Pro | Arraihan Academy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+  <!-- LOGIN PIN ADMIN SEDERHANA -->
+  <div id="pinScreen" class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+    <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center mx-auto text-xl">
+      <i class="fa-solid fa-user-shield"></i>
+    </div>
+    <div>
+      <h1 class="font-extrabold text-base text-white">Arraihan Academy Keygen</h1>
+      <p class="text-xs text-slate-400 mt-0.5">Masukkan PIN Otorisasi Founder (SWK)</p>
+    </div>
+    <input
+      type="password"
+      id="adminPinInput"
+      placeholder="Masukkan PIN Admin (Default: 2026)"
+      class="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-2.5 text-center text-sm font-mono tracking-widest text-white outline-none focus:border-indigo-500"
+    />
+    <button onclick="verifyAdminPin()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition">
+      Buka Dashboard Keygen
+    </button>
+  </div>
+
+  <!-- DASHBOARD KEYGEN UTAMA -->
+  <div id="keygenDashboard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Official Licensing Tool</span>
+          <h2 class="text-base font-extrabold text-white">Arraihan Academy (SWK) — Keygen</h2>
+        </div>
+      </div>
+      <span class="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg font-mono">v2.0 PRO</span>
+    </div>
+
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">Nama Klien / Instansi Pembeli</label>
+        <input
+          type="text"
+          id="clientName"
+          placeholder="Contoh: Ibu Rina / SMA Negeri 1 / LKP..."
+          class="w-full rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">Device ID Klien (Dari Aplikasi Pengguna)</label>
+        <input
+          type="text"
+          id="clientDeviceId"
+          placeholder="SWK-XXXXXXXX"
+          class="w-full rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2.5 text-sm font-mono uppercase text-emerald-400 outline-none focus:border-indigo-500"
+        />
+      </div>
+
+      <button
+        onclick="createSerialKey()"
+        class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-bold text-xs shadow-lg transition"
+      >
+        <i class="fa-solid fa-bolt mr-1"></i> Generate Serial Key Permanen
+      </button>
+    </div>
+
+    <!-- Output Serial Key -->
+    <div id="outputBox" class="hidden bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Serial Key Lisensi Resmi</span>
+        <span class="text-[11px] text-emerald-400 font-semibold"><i class="fa-solid fa-check-circle mr-1"></i> Siap Dikirim</span>
+      </div>
+      <div id="generatedKeyDisplay" class="font-mono text-base font-extrabold text-center py-2.5 bg-slate-900 rounded-lg text-amber-300 tracking-wider select-all border border-slate-800">
+        ARRAIHAN-XXXX-XXXX-XXXX
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="copySerialOnly()" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white">
+          <i class="fa-regular fa-copy mr-1"></i> Salin Kode Saja
+        </button>
+        <button onclick="copyWhatsAppMessage()" class="py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white">
+          <i class="fa-brands fa-whatsapp mr-1"></i> Salin Pesan WA
+        </button>
+      </div>
+    </div>
+
+    <!-- Log Lisensi yang Pernah Dibuat -->
+    <div class="border-t border-slate-800 pt-3">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-[11px] font-bold uppercase text-slate-400">Riwayat Lisensi Klien</span>
+        <button onclick="clearKeygenLog()" class="text-[11px] text-rose-400 hover:underline">Reset Log</button>
+      </div>
+      <div id="keygenLogList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs"></div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_PIN = "2026"; // Ubah PIN sesuai keinginan Anda
+    const APP_SALT = "ARRAIHAN_SWK_QUIZ_PRO_2026"; // WAJIB SAMA DENGAN index.html
+
+    function verifyAdminPin() {
+      const pin = document.getElementById("adminPinInput").value.trim();
+      if (pin === ADMIN_PIN) {
+        document.getElementById("pinScreen").classList.add("hidden");
+        document.getElementById("keygenDashboard").classList.remove("hidden");
+        renderKeygenLog();
+      } else {
+        alert("PIN Otorisasi salah!");
+      }
+    }
+
+    function generateValidSerial(deviceId) {
+      const cleanId = deviceId.trim().toUpperCase();
+      const raw = cleanId + "::" + APP_SALT;
+      let h1 = 0xdeadbeef ^ raw.length;
+      let h2 = 0x41c6ce57 ^ raw.length;
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      const hex1 = (h1 >>> 0).toString(16).toUpperCase().padStart(8, "0");
+      const hex2 = (h2 >>> 0).toString(16).toUpperCase().padStart(8, "0");
+      return `ARRAIHAN-${hex1.slice(0, 4)}-${hex1.slice(4, 8)}-${hex2.slice(0, 4)}`;
+    }
+
+    function createSerialKey() {
+      const client = document.getElementById("clientName").value.trim() || "Klien Arraihan";
+      const devId = document.getElementById("clientDeviceId").value.trim().toUpperCase();
+      if (!devId) {
+        alert("Masukkan Device ID Klien terlebih dahulu!");
+        return;
+      }
+
+      const serial = generateValidSerial(devId);
+      document.getElementById("generatedKeyDisplay").textContent = serial;
+      document.getElementById("outputBox").classList.remove("hidden");
+
+      const logs = JSON.parse(localStorage.getItem("swk_keygen_logs") || "[]");
+      logs.unshift({
+        client,
+        devId,
+        serial,
+        date: new Date().toLocaleDateString("id-ID")
+      });
+      localStorage.setItem("swk_keygen_logs", JSON.stringify(logs.slice(0, 30)));
+      renderKeygenLog();
+    }
+
+    function copySerialOnly() {
+      const serial = document.getElementById("generatedKeyDisplay").textContent;
+      navigator.clipboard.writeText(serial);
+      alert("Serial Key disalin: " + serial);
+    }
+
+    function copyWhatsAppMessage() {
+      const client = document.getElementById("clientName").value.trim() || "Bapak/Ibu";
+      const devId = document.getElementById("clientDeviceId").value.trim().toUpperCase();
+      const serial = document.getElementById("generatedKeyDisplay").textContent;
+      const msg = `Halo *${client}*,\nTerima kasih telah menggunakan *Summary & Quiz Generator PRO — Arraihan Academy (SWK)*.\n\nBerikut detail aktivasi Lisensi Permanen Anda:\n- *Device ID:* \`${devId}\`\n- *Serial Key:* \`${serial}\`\n\nSilakan klik menu *Aktivasi Lisensi* di pojok kanan atas aplikasi dan masukkan Serial Key di atas. Selamat berkarya!`;
+      navigator.clipboard.writeText(msg);
+      alert("Format pesan aktivasi WhatsApp berhasil disalin!");
+    }
+
+    function renderKeygenLog() {
+      const container = document.getElementById("keygenLogList");
+      const logs = JSON.parse(localStorage.getItem("swk_keygen_logs") || "[]");
+      if (!logs.length) {
+        container.innerHTML = `<p class="text-slate-500 italic">Belum ada riwayat lisensi.</p>`;
+        return;
+      }
+      container.innerHTML = logs.map(l => `
+        <div class="p-2 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center">
+          <div>
+            <span class="font-bold text-slate-200">${l.client}</span>
+            <span class="text-slate-500 ml-1">(${l.devId})</span>
+          </div>
+          <span class="font-mono text-amber-400 font-semibold">${l.serial}</span>
+        </div>
+      `).join("");
+    }
+
+    function clearKeygenLog() {
+      localStorage.removeItem("swk_keygen_logs");
+      renderKeygenLog();
+    }
+  </script>
+</body>
+</html>
