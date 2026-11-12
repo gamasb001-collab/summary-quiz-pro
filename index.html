@@ -51,7 +51,7 @@
           <h1 class="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
             Summary & Quiz Generator <span class="text-indigo-600">PRO</span>
           </h1>
-          <p class="text-xs text-slate-500 mt-1">Powered by Gemini 3.8 Flash Free Tier + Live Google Search Grounding</p>
+          <p class="text-xs text-slate-500 mt-1">Fast Skill Engine — Gemini Free Tier + Smart Quota Optimizer</p>
         </div>
       </div>
 
@@ -75,27 +75,26 @@
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-magnifying-glass-chart text-indigo-600"></i> Sumber Materi & Pencarian AI
+            <i class="fa-solid fa-bolt text-indigo-600"></i> Input Materi / Topik
           </h2>
           <span id="activeModelPill" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
-            gemini-3.8-flash
+            gemini-3.5-flash-lite
           </span>
         </div>
 
-        <!-- Sakelar Pencarian Google Search Grounding & URL -->
+        <!-- Mode Pintar (Otomatis Cepat & Hemat Kuota) -->
         <div class="p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/90 to-sky-50/90 border border-indigo-200/80 flex items-start justify-between gap-3">
           <div class="space-y-0.5">
             <label for="useWebSearchToggle" class="text-xs font-extrabold text-indigo-950 flex items-center gap-1.5 cursor-pointer">
-              <i class="fa-brands fa-google text-indigo-600"></i> Aktifkan Pencarian Web & URL Terbaru
+              <i class="fa-brands fa-google text-indigo-600"></i> Paksa Pencarian Google Search
             </label>
-            <p class="text-[11px] text-slate-600 leading-relaxed">
-              Menggunakan <strong>Gemini Free Search Grounding</strong> untuk mencari fakta terbaru dari internet atau mengekstrak isi tautan URL secara langsung.
+            <p id="modeHelperText" class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Rekomendasi: Biarkan MATI</strong> saat meringkas file PDF/Teks panjang agar secepat Keahlian Browser & bebas limit kuota. Nyalakan hanya jika mencari topik pendek dari internet.
             </p>
           </div>
           <input
             type="checkbox"
             id="useWebSearchToggle"
-            checked
             class="mt-1 w-4 h-4 accent-indigo-600 rounded cursor-pointer shrink-0"
           />
         </div>
@@ -107,8 +106,8 @@
           </label>
           <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl p-3.5 cursor-pointer bg-slate-50/60 hover:bg-indigo-50/30 transition text-center">
             <i class="fa-solid fa-cloud-arrow-up text-xl text-indigo-500 mb-1"></i>
-            <span id="fileNameLabel" class="text-xs font-semibold text-slate-700">Klik untuk memilih file materi (Opsional)</span>
-            <span class="text-[10px] text-slate-400 mt-0.5">Ekstraksi instan di browser tanpa upload ke server</span>
+            <span id="fileNameLabel" class="text-xs font-semibold text-slate-700">Klik untuk memilih file materi (PDF / Teks)</span>
+            <span class="text-[10px] text-slate-400 mt-0.5">Otomatis dikompresi agar cepat & hemat kuota API</span>
             <input type="file" id="fileInput" accept=".pdf,.txt,.csv,.md,.json" class="hidden" onchange="handleFileUpload(event)" />
           </label>
         </div>
@@ -117,7 +116,7 @@
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Topik Pencarian / Alamat URL Web / Teks Materi
+              Teks Materi / Dokumen / Topik
             </label>
             <span id="charCount" class="text-[11px] text-slate-400">0 karakter</span>
           </div>
@@ -125,7 +124,7 @@
             id="materialInput"
             rows="8"
             oninput="updateCharCount()"
-            placeholder="Ketik topik yang ingin dicari di internet (contoh: 'Pedoman terbaru skrining kesehatan primer'), tempelkan link URL artikel web, atau tempelkan naskah materi panjang di sini..."
+            placeholder="Tempelkan materi dokumen/PDF di sini, atau ketik topik yang ingin dibuatkan ringkasan & 10 soal kuis..."
             class="w-full rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 p-3.5 text-sm outline-none transition resize-y"
           ></textarea>
         </div>
@@ -156,7 +155,7 @@
           class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2"
         >
           <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Cari, Ringkas & Buat 10 Soal Kuis</span>
+          <span>Buat Ringkasan & 10 Soal Kuis (Cepat)</span>
         </button>
       </div>
 
@@ -180,19 +179,19 @@
       <!-- Placeholder Awal -->
       <div id="emptyState" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center my-auto flex flex-col items-center justify-center min-h-[420px] no-print">
         <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-4">
-          <i class="fa-solid fa-globe"></i>
+          <i class="fa-solid fa-bolt-lightning"></i>
         </div>
-        <h3 class="text-base font-bold text-slate-800">Siap Mencari Referensi Terbaru, Meringkas & Menyusun 10 Kuis</h3>
+        <h3 class="text-base font-bold text-slate-800">Mode Cepat & Hemat Kuota Aktif</h3>
         <p class="text-xs text-slate-500 max-w-md mt-1.5 leading-relaxed">
-          Ketikkan topik apa saja, masukkan URL situs web, atau unggah dokumen PDF/TXT. Hasil ringkasan dan 10 soal kuis dapat langsung diekspor ke <strong>Microsoft Word (.doc)</strong>, <strong>Excel (.csv)</strong>, atau <strong>PDF</strong>.
+          Unggah dokumen PDF/TXT atau tempelkan materi Anda. Sistem secara otomatis mengompresi token dan memilih model <strong>Gemini Flash-Lite / Flash Free Tier</strong> berkuota tertinggi agar hasil keluar dalam hitungan detik tanpa terkena limit.
         </p>
       </div>
 
       <!-- Loading State -->
       <div id="loadingState" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center min-h-[420px] flex flex-col items-center justify-center no-print">
         <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-        <h3 id="loadingTitle" class="text-sm font-bold text-slate-800">Menelusuri Referensi & Menyusun 10 Soal Kuis...</h3>
-        <p class="text-xs text-slate-500 mt-1">Menggunakan model Gemini Free terbaru untuk mengekstrak intisari dan pembahasan soal.</p>
+        <h3 id="loadingTitle" class="text-sm font-bold text-slate-800">Memproses Ringkasan & 10 Soal Kuis...</h3>
+        <p id="loadingSub" class="text-xs text-slate-500 mt-1">Menggunakan jalur cepat JSON terstruktur (Hemat Token).</p>
       </div>
 
       <!-- Result Container -->
@@ -321,7 +320,7 @@
   <footer class="bg-white border-t border-slate-200 py-4 px-4 text-center text-xs text-slate-500 no-print mt-8">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
       <p>&copy; 2026 <strong>Arraihan Academy (SWK)</strong>. All rights reserved.</p>
-      <p class="text-slate-400">Engineered with Gemini 3.8 Flash Free Tier & Live Web Search Grounding</p>
+      <p class="text-slate-400">High-Speed Summary & Quiz Engine — Optimized for Gemini Free Tier</p>
     </div>
   </footer>
 
@@ -337,10 +336,10 @@
         </button>
       </div>
       <p class="text-xs text-slate-500 leading-relaxed">
-        Gunakan API Key gratis dari <strong>Google AI Studio</strong> (tanpa akun billing). Key Anda disimpan aman di <code>localStorage</code> browser ini.
+        Gunakan API Key dari <strong>Google AI Studio</strong>. Untuk kecepatan tertinggi dan kuota harian terbesar di Free Tier, gunakan <strong>gemini-3.5-flash-lite</strong> atau <strong>gemini-3.1-flash-lite</strong>.
       </p>
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Google Gemini API Key (Free Tier)</label>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Google Gemini API Key</label>
         <input
           type="password"
           id="apiKeyInput"
@@ -349,16 +348,13 @@
         />
       </div>
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Model Gemini Free Tier Terbaru</label>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Model Utama (Free Tier)</label>
         <select id="modelSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold bg-white">
-          <option value="gemini-3.8-flash">gemini-3.8-flash (Flagship Free Terbaru + Web Search)</option>
-          <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Super Cepat & Kuota Harian Tinggi)</option>
-          <option value="gemini-3.6-flash">gemini-3.6-flash (Stabil & Multimodal Free)</option>
-          <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Alternatif Ringan)</option>
+          <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Paling Cepat & Kuota Free Terbesar - Rekomendasi)</option>
+          <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Ultra Ringan & Anti-Limit Kuota)</option>
+          <option value="gemini-3.8-flash">gemini-3.8-flash (Flagship Flash Terbaru)</option>
+          <option value="gemini-3.6-flash">gemini-3.6-flash (Standar Flash)</option>
         </select>
-        <p class="text-[11px] text-slate-400 mt-1">
-          *Jika kuota salah satu model sedang penuh, sistem otomatis melakukan fallback ke model Free Tier berikutnya.
-        </p>
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeApiModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
@@ -433,8 +429,14 @@
     // =========================================================================
     const APP_SALT = "ARRAIHAN_SWK_QUIZ_PRO_2026";
     const TRIAL_DAYS = 5;
-    const DEFAULT_MODEL = "gemini-3.8-flash";
-    const FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash"];
+    // Default ke gemini-3.5-flash-lite yang punya kuota Free Tier paling besar & cepat
+    const DEFAULT_MODEL = "gemini-3.5-flash-lite";
+    const FALLBACK_MODELS = [
+      "gemini-3.5-flash-lite",
+      "gemini-3.1-flash-lite",
+      "gemini-3.8-flash",
+      "gemini-3.6-flash"
+    ];
 
     const STORAGE_KEYS = {
       DEVICE_ID: "swk_sq_device_id",
@@ -442,7 +444,7 @@
       LICENSE_KEY: "swk_sq_license_key",
       LICENSE_USER: "swk_sq_license_user",
       API_KEY: "swk_sq_gemini_api_key",
-      MODEL: "swk_sq_gemini_model_v2",
+      MODEL: "swk_sq_gemini_model_v3",
       HISTORY: "swk_sq_history_v1"
     };
 
@@ -569,7 +571,7 @@
     }
 
     // =========================================================================
-    // 2. KONFIGURASI API KEY & MODEL GEMINI FREE TERBARU
+    // 2. KONFIGURASI API KEY & KOMPRESI TEKS DOKUMEN
     // =========================================================================
     function updateApiButtonUI() {
       const key = localStorage.getItem(STORAGE_KEYS.API_KEY);
@@ -608,9 +610,21 @@
       closeApiModal();
     }
 
+    // Kompresi spasi berlebih dari PDF agar hemat token & bebas limit 429
+    function cleanAndCompressText(str) {
+      return str
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
     function updateCharCount() {
-      const len = document.getElementById("materialInput").value.length;
-      document.getElementById("charCount").textContent = len.toLocaleString("id-ID") + " karakter";
+      const val = document.getElementById("materialInput").value;
+      document.getElementById("charCount").textContent = val.length.toLocaleString("id-ID") + " karakter";
+      // Jika teks > 500 karakter (berarti pengguna memasukkan materi dokumen), matikan Google Search otomatis agar tidak kena limit kuota!
+      if (val.length > 500) {
+        document.getElementById("useWebSearchToggle").checked = false;
+      }
     }
 
     async function handleFileUpload(event) {
@@ -619,22 +633,23 @@
       document.getElementById("fileNameLabel").textContent = `Memproses: ${file.name}...`;
 
       try {
+        let extractedText = "";
         if (file.name.toLowerCase().endsWith(".pdf")) {
           pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
           const arrayBuffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          let extractedText = "";
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const content = await page.getTextContent();
             const strings = content.items.map(item => item.str);
             extractedText += strings.join(" ") + "\n\n";
           }
-          document.getElementById("materialInput").value = extractedText.trim();
         } else {
-          const text = await file.text();
-          document.getElementById("materialInput").value = text.trim();
+          extractedText = await file.text();
         }
+        const compressed = cleanAndCompressText(extractedText);
+        document.getElementById("materialInput").value = compressed;
+        document.getElementById("useWebSearchToggle").checked = false; // Otomatis mode cepat dokumen
         document.getElementById("fileNameLabel").textContent = `Berhasil dimuat: ${file.name}`;
         updateCharCount();
       } catch (err) {
@@ -644,7 +659,7 @@
     }
 
     // =========================================================================
-    // 3. ENGINE AI: GEMINI FREE TIER TERBARU + LIVE GOOGLE SEARCH GROUNDING
+    // 3. ENGINE AI: SMART ROUTING (MODE KEAHLIAN CEPAT vs PENCARIAN WEB)
     // =========================================================================
     function extractJsonFromText(text) {
       if (!text) throw new Error("Respons AI kosong.");
@@ -657,11 +672,33 @@
       return JSON.parse(cleaned);
     }
 
-    async function callGeminiWithFallback(apiKey, preferredModel, payload) {
+    const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+    async function callGeminiSmart(apiKey, preferredModel, prompt, useWebSearch, hasUrl) {
       const modelsToTry = [preferredModel, ...FALLBACK_MODELS.filter(m => m !== preferredModel)];
       let lastError = null;
 
-      for (const modelName of modelsToTry) {
+      for (let i = 0; i < modelsToTry.length; i++) {
+        const modelName = modelsToTry[i];
+        document.getElementById("loadingTitle").textContent = `Memproses dengan ${modelName}...`;
+
+        // Buat payload untuk model saat ini
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.25
+          }
+        };
+
+        // Jika percobaan pertama pakai Web Search kena limit kuota (429), otomatis lepaskan tool google_search di fallback agar tetap berhasil!
+        const enableGroundingNow = useWebSearch && i === 0;
+        if (enableGroundingNow) {
+          payload.tools = [{ google_search: {} }];
+          if (hasUrl) payload.tools.push({ url_context: {} });
+        } else {
+          payload.generationConfig.responseMimeType = "application/json";
+        }
+
         try {
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
@@ -678,6 +715,8 @@
           return { result, usedModel: modelName };
         } catch (err) {
           lastError = err;
+          // Beri jeda 1.2 detik sebelum pindah ke model fallback agar tidak terkena rate-limit beruntun
+          await sleep(1200);
         }
       }
       throw lastError;
@@ -689,17 +728,21 @@
       const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
       if (!apiKey) {
         openApiModal();
-        alert("Silakan masukkan Google Gemini API Key (Free Tier) Anda terlebih dahulu.");
+        alert("Silakan masukkan Google Gemini API Key Anda terlebih dahulu.");
         return;
       }
 
-      const rawText = document.getElementById("materialInput").value.trim();
+      const rawText = cleanAndCompressText(document.getElementById("materialInput").value);
       if (!rawText || rawText.length < 4) {
-        alert("Mohon ketikkan topik pencarian, alamat URL, atau masukkan teks materi terlebih dahulu.");
+        alert("Mohon masukkan teks materi, dokumen, atau topik terlebih dahulu.");
         return;
       }
 
-      const useWebSearch = document.getElementById("useWebSearchToggle").checked;
+      const userCheckedSearch = document.getElementById("useWebSearchToggle").checked;
+      const hasUrl = /https?:\/\/[^\s]+/i.test(rawText);
+      // Hanya gunakan Google Search jika materi pendek (< 600 karakter) atau ada URL, DAN dicentang user
+      const useWebSearch = userCheckedSearch && (rawText.length < 600 || hasUrl);
+
       const difficulty = document.getElementById("difficultySelect").value;
       const qType = document.getElementById("questionTypeSelect").value;
       const preferredModel = localStorage.getItem(STORAGE_KEYS.MODEL) || DEFAULT_MODEL;
@@ -707,25 +750,26 @@
       document.getElementById("emptyState").classList.add("hidden");
       document.getElementById("resultContainer").classList.add("hidden");
       document.getElementById("loadingState").classList.remove("hidden");
-      document.getElementById("loadingTitle").textContent = useWebSearch
-        ? `Menelusuri Google Search & Menyusun 10 Soal dengan ${preferredModel}...`
-        : `Menganalisis Materi & Menyusun 10 Soal dengan ${preferredModel}...`;
+      document.getElementById("loadingSub").textContent = useWebSearch
+        ? "Menelusuri referensi web terbaru..."
+        : "Mode Ekstraksi Cepat aktif (Hemat Token & Bebas Limit Kuota)...";
       document.getElementById("generateBtn").disabled = true;
 
       const formatInstruction = qType === "pg"
         ? "Semua 10 pertanyaan WAJIB berbentuk Pilihan Ganda (type: 'pg') dengan 4 opsi (A, B, C, D)."
         : "Pertanyaan nomor 1 sampai 7 berbentuk Pilihan Ganda (type: 'pg') dengan 4 opsi, dan nomor 8 sampai 10 berbentuk Esai/Uraian Terbuka (type: 'essay', options: []).";
 
-      const hasUrl = /https?:\/\/[^\s]+/i.test(rawText);
+      // Batasi maksimal 18.000 karakter (~4.500 token) agar proses selalu di bawah 5 detik dan tidak melampaui TPM Free Tier
+      const optimizedMaterial = rawText.slice(0, 18000);
 
-      const prompt = `Anda adalah Sistem Ahli Pembuat Ringkasan Materi & Kuis Profesional.
-Tugas Anda:
-1. ${useWebSearch ? "Gunakan Google Search Grounding (dan pembacaan URL jika ada link) untuk mencari data, fakta, regulasi, atau referensi terbaru yang relevan dengan masukan pengguna." : "Analisis masukan materi berikut secara mendalam."}
-2. Susun ringkasan terstruktur dan ringkas yang menyoroti gambaran umum, poin-poin penting utama, serta definisi/istilah kunci.
-3. Buat TEPAT 10 pertanyaan kuis yang relevan (tingkat kesulitan: ${difficulty}) berdasarkan materi tersebut. ${formatInstruction}
-4. Sertakan kunci jawaban yang akurat dan penjelasan/pembahasan yang jelas untuk kesepuluh pertanyaan tersebut.
+      const prompt = `# Pembuat Ringkasan Materi & Kuis
+Alur Kerja:
+1. Analisis Masukan: Ekstrak informasi inti dari materi/topik yang diberikan.
+2. Menyusun Ringkasan: Berikan ringkasan terstruktur dan ringkas yang menyoroti konsep, definisi, dan poin penting utama.
+3. Menghasilkan 10 Pertanyaan: Buat TEPAT 10 pertanyaan relevan (tingkat kesulitan: ${difficulty}) berdasarkan materi. ${formatInstruction}
+4. Memberikan Jawaban: Sertakan kunci jawaban dan penjelasan singkat yang jelas untuk 10 pertanyaan tersebut.
 
-PENTING: Kembalikan HANYA objek JSON valid (tanpa teks pengantar di luar JSON) dengan skema persis berikut:
+Kembalikan HANYA format JSON murni sesuai skema berikut:
 {
   "title": "Judul Materi",
   "overview": "Paragraf ringkasan eksekutif (intisari materi)",
@@ -741,34 +785,18 @@ PENTING: Kembalikan HANYA objek JSON valid (tanpa teks pengantar di luar JSON) d
       "question": "Teks pertanyaan...",
       "options": ["A. Pilihan satu", "B. Pilihan dua", "C. Pilihan tiga", "D. Pilihan empat"],
       "correctAnswer": "A",
-      "explanation": "Penjelasan lengkap mengapa jawaban tersebut benar berdasarkan materi."
+      "explanation": "Penjelasan mengapa jawaban tersebut benar."
     }
   ]
 }
 
-MASUKAN TOPIK / URL / MATERI SUMBER:
+MATERI SUMBER / TOPIK:
 """
-${rawText.slice(0, 28000)}
+${optimizedMaterial}
 """`;
 
-      const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.3
-        }
-      };
-
-      if (useWebSearch) {
-        payload.tools = [{ google_search: {} }];
-        if (hasUrl) {
-          payload.tools.push({ url_context: {} });
-        }
-      } else {
-        payload.generationConfig.responseMimeType = "application/json";
-      }
-
       try {
-        const { result, usedModel } = await callGeminiWithFallback(apiKey, preferredModel, payload);
+        const { result, usedModel } = await callGeminiSmart(apiKey, preferredModel, prompt, useWebSearch, hasUrl);
         document.getElementById("activeModelPill").textContent = usedModel;
 
         const candidate = result.candidates?.[0];
@@ -791,7 +819,7 @@ ${rawText.slice(0, 28000)}
         renderOutput(parsed);
         saveToHistory(parsed);
       } catch (err) {
-        alert("Terjadi kesalahan saat memproses AI: " + err.message);
+        alert("Peringatan Kuota API: " + err.message + "\n\nTips: Tunggu sekitar 30-60 detik, atau buat API Key di Project baru pada Google AI Studio.");
         document.getElementById("emptyState").classList.remove("hidden");
       } finally {
         document.getElementById("loadingState").classList.add("hidden");
@@ -1081,7 +1109,6 @@ ${rawText.slice(0, 28000)}
       };
 
       const rows = [];
-      // Bagian 1: Metadata & Ringkasan
       rows.push(["JUDUL MATERI", currentData.title || "-"]);
       rows.push(["INTISARI MATERI", currentData.overview || "-"]);
       rows.push([]);
@@ -1092,7 +1119,6 @@ ${rawText.slice(0, 28000)}
       (currentData.keyTerms || []).forEach(t => rows.push([t.term, t.definition]));
       rows.push([]);
 
-      // Bagian 2: Tabel 10 Soal Kuis
       rows.push([
         "No",
         "Tipe Soal",
@@ -1214,7 +1240,7 @@ ${rawText.slice(0, 28000)}
 
     function resetAll() {
       document.getElementById("materialInput").value = "";
-      document.getElementById("fileNameLabel").textContent = "Klik untuk memilih file materi (Opsional)";
+      document.getElementById("fileNameLabel").textContent = "Klik untuk memilih file materi (PDF / Teks)";
       updateCharCount();
     }
 
