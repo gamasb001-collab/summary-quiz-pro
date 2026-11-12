@@ -5,8 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Summary, PPT & Quiz Generator Pro — Arraihan Academy</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <!-- Library Ekstraksi PDF, PPTX/DOCX (JSZip), dan Pembuat PPTX (PptxGenJS) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
@@ -21,16 +25,15 @@
     }
     @media print {
       .no-print { display: none !important; }
-      .print-only { display: block !important; }
       body { background: #fff !important; color: #000 !important; }
-      .card-print { box-shadow: none !important; border: 1px solid #ccc !important; }
+      .card-print { box-shadow: none !important; border: 1px solid #ccc !important; background: #fff !important; color: #000 !important; }
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 
   <!-- TOP BAR LISENSI & STATUS -->
-  <div class="bg-slate-900 text-white text-xs py-2 px-4 no-print border-b border-slate-800">
+  <div class="bg-slate-900 dark:bg-black text-white text-xs py-2 px-4 no-print border-b border-slate-800">
     <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2">
       <div class="flex items-center gap-2">
         <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5">
@@ -42,7 +45,7 @@
       </div>
       <div class="flex items-center gap-3">
         <span class="text-slate-400">Device ID: <strong id="deviceIdDisplay" class="text-white font-mono select-all">---</strong></span>
-        <button onclick="openLicenseModal()" class="text-sky-400 hover:text-sky-300 underline font-semibold">
+        <button type="button" onclick="openLicenseModal()" class="text-sky-400 hover:text-sky-300 underline font-semibold cursor-pointer">
           <i class="fa-solid fa-key mr-1"></i>Aktivasi Lisensi
         </button>
       </div>
@@ -50,26 +53,52 @@
   </div>
 
   <!-- HEADER -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
-    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+  <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs no-print transition-colors">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md">
-          <i class="fa-solid fa-graduation-cap text-xl"></i>
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shrink-0">
+          <i class="fa-solid fa-graduation-cap text-lg sm:text-xl"></i>
         </div>
         <div>
-          <h1 class="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
-            Summary, PPT & Quiz Generator <span class="text-indigo-600">PRO</span>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight leading-none">
+            Summary, PPT & Quiz Generator <span class="text-indigo-600 dark:text-indigo-400">PRO</span>
           </h1>
-          <p class="text-xs text-slate-500 mt-1">Input PDF/PPTX/DOCX/Web &bull; Output Ringkasan, Slide PPT Auto-Fit & 10 Soal Kuis</p>
+          <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Ekstraksi PPTX/PDF/DOCX &bull; Slide PPT Auto-Fit &bull; 10 Soal Kuis Otomatis
+          </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button onclick="openApiModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1.5 shadow-sm transition">
-          <i class="fa-solid fa-sliders text-indigo-600"></i>
-          <span id="apiStatusText">Pengaturan Mesin & API</span>
+        <!-- Tombol Mode Terang / Gelap -->
+        <button
+          type="button"
+          onclick="toggleTheme()"
+          id="themeToggleBtn"
+          class="px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+          title="Ubah Mode Terang / Gelap"
+        >
+          <i id="themeIcon" class="fa-solid fa-moon"></i>
+          <span id="themeText" class="hidden sm:inline">Mode Gelap</span>
         </button>
-        <button onclick="resetAll()" class="px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition" title="Reset Form">
+
+        <!-- Tombol Pengaturan Mesin & API -->
+        <button
+          type="button"
+          onclick="openApiModal()"
+          class="px-3.5 py-2 rounded-xl text-xs font-bold border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
+        >
+          <i class="fa-solid fa-sliders"></i>
+          <span id="apiStatusText">Pengaturan & API</span>
+        </button>
+
+        <!-- Tombol Reset -->
+        <button
+          type="button"
+          onclick="resetAll()"
+          class="px-3 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 transition cursor-pointer"
+          title="Reset Form"
+        >
           <i class="fa-solid fa-rotate-right"></i>
         </button>
       </div>
@@ -81,39 +110,58 @@
 
     <!-- PANEL KIRI: INPUT MATERI & FILE PPTX/PDF (5 KOLOM) -->
     <section class="lg:col-span-5 space-y-4 no-print">
-      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-file-powerpoint text-orange-600"></i> Sumber Materi & Dokumen
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-4 transition-colors">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h2 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm sm:text-base">
+            <i class="fa-solid fa-file-powerpoint text-orange-500"></i> Sumber Materi & Dokumen
           </h2>
-          <span id="activeModelPill" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
+          <span id="activeModelPill" class="text-[11px] bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full font-semibold">
             Hybrid Auto-Fast
           </span>
         </div>
 
         <!-- Pilihan Mode Mesin Pemroses -->
-        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl">
-          <button type="button" id="modeBtnCloud" onclick="setEngineMode('hybrid')" class="py-2 px-2.5 rounded-lg text-xs font-bold bg-white text-indigo-700 shadow-xs transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Cloud + Auto-Fallback
-          </button>
-          <button type="button" id="modeBtnLocal" onclick="setEngineMode('local')" class="py-2 px-2.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-bolt text-amber-500"></i> Instan Lokal (0 Kuota)
-          </button>
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+            Mode Mesin Pemroses
+          </label>
+          <div class="grid grid-cols-2 gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl">
+            <button
+              type="button"
+              id="modeBtnCloud"
+              onclick="setEngineMode('hybrid')"
+              class="py-2 px-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Cloud + Fallback
+            </button>
+            <button
+              type="button"
+              id="modeBtnLocal"
+              onclick="setEngineMode('local')"
+              class="py-2 px-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-solid fa-bolt text-amber-500"></i> Instan Lokal (0 Kuota)
+            </button>
+          </div>
         </div>
 
         <!-- Upload File (PPTX / PDF / DOCX / TXT / CSV) -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
             Unggah File (.PPTX, .PDF, .DOCX, .TXT, .CSV)
           </label>
-          <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl p-4 cursor-pointer bg-slate-50/60 hover:bg-indigo-50/30 transition text-center group">
-            <div class="flex items-center gap-2 text-xl mb-1">
+          <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-xl p-4 cursor-pointer bg-slate-50/60 dark:bg-slate-800/40 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/30 transition text-center group">
+            <div class="flex items-center gap-2.5 text-xl mb-1">
               <i class="fa-solid fa-file-powerpoint text-orange-500 group-hover:scale-110 transition"></i>
               <i class="fa-solid fa-file-pdf text-rose-500 group-hover:scale-110 transition"></i>
               <i class="fa-solid fa-file-word text-blue-500 group-hover:scale-110 transition"></i>
             </div>
-            <span id="fileNameLabel" class="text-xs font-semibold text-slate-700">Klik untuk memilih file PPTX / PDF / DOCX / Teks</span>
-            <span class="text-[10px] text-slate-400 mt-0.5">Ekstraksi slide & dokumen otomatis langsung di browser</span>
+            <span id="fileNameLabel" class="text-xs font-semibold text-slate-700 dark:text-slate-200">
+              Klik untuk memilih file PPTX / PDF / DOCX / Teks
+            </span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+              Ekstraksi isi slide & dokumen otomatis langsung di browser
+            </span>
             <input type="file" id="fileInput" accept=".pptx,.pdf,.docx,.txt,.csv,.md,.json" class="hidden" onchange="handleFileUpload(event)" />
           </label>
         </div>
@@ -121,33 +169,42 @@
         <!-- Textarea Materi / Topik Pencarian / URL -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Teks Materi / Hasil Ekstraksi PPT & PDF / Topik
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Teks Materi / Ekstraksi Slide / Topik
             </label>
-            <span id="charCount" class="text-[11px] text-slate-400">0 karakter</span>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="loadSampleMaterial()"
+                class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
+              >
+                <i class="fa-solid fa-flask mr-0.5"></i> Muat Contoh
+              </button>
+              <span id="charCount" class="text-[11px] text-slate-400">0 karakter</span>
+            </div>
           </div>
           <textarea
             id="materialInput"
-            rows="7"
+            rows="6"
             oninput="updateCharCount()"
-            placeholder="Unggah file PPTX/PDF di atas, atau tempelkan materi pelajaran/SOP/jurnal di sini..."
-            class="w-full rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 p-3.5 text-sm outline-none transition resize-y"
+            placeholder="Unggah file PPTX/PDF di atas, atau tempelkan materi pelajaran, SOP, artikel, maupun topik di sini..."
+            class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 p-3 text-sm outline-none transition resize-y"
           ></textarea>
         </div>
 
         <!-- Parameter Kuis & Tema PPT -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Tingkat Kesulitan Kuis</label>
-            <select id="difficultySelect" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium bg-white outline-none focus:border-indigo-600">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Tingkat Kesulitan Kuis</label>
+            <select id="difficultySelect" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-2 text-xs font-medium outline-none focus:border-indigo-600">
               <option value="Campuran (Konsep & Analisis HOTS)">Campuran (Konsep & HOTS)</option>
               <option value="Dasar & Menengah (Faktual & Konseptual)">Dasar & Menengah</option>
               <option value="Tingkat Lanjut / HOTS (Studi Kasus)">Tingkat Lanjut (HOTS)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Bentuk 10 Soal Kuis</label>
-            <select id="questionTypeSelect" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium bg-white outline-none focus:border-indigo-600">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Bentuk 10 Soal Kuis</label>
+            <select id="questionTypeSelect" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-2 text-xs font-medium outline-none focus:border-indigo-600">
               <option value="pg">10 Pilihan Ganda (A-D)</option>
               <option value="campuran">7 Pilihan Ganda + 3 Esai</option>
             </select>
@@ -155,29 +212,30 @@
         </div>
 
         <!-- Tema Desain PPT -->
-        <div class="grid grid-cols-2 gap-3 items-center pt-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center pt-1">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Tema Desain Slide PPT</label>
-            <select id="pptThemeSelect" onchange="if(currentData) renderSlideDeck()" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium bg-white outline-none focus:border-indigo-600">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Tema Desain Slide PPT</label>
+            <select id="pptThemeSelect" onchange="if(currentData) renderSlideDeck()" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-2 text-xs font-medium outline-none focus:border-indigo-600">
               <option value="indigo">Indigo Executive (Modern)</option>
               <option value="emerald">Emerald Medical & Sains</option>
               <option value="dark">Royal Dark VIP</option>
               <option value="amber">Terracotta Academic</option>
             </select>
           </div>
-          <div class="pt-4">
-            <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer">
+          <div class="sm:pt-5">
+            <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">
               <input type="checkbox" id="useWebSearchToggle" class="w-4 h-4 accent-indigo-600 rounded" />
-              <span>Cari Info Web (Topik Pendek)</span>
+              <span>Gunakan Pencarian Web</span>
             </label>
           </div>
         </div>
 
         <!-- Tombol Generate -->
         <button
+          type="button"
           id="generateBtn"
           onclick="generateSummaryAndQuiz()"
-          class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2"
+          class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
         >
           <i class="fa-solid fa-bolt-lightning"></i>
           <span>Proses Ringkasan, Slide PPT & 10 Kuis</span>
@@ -185,14 +243,14 @@
       </div>
 
       <!-- Riwayat Cepat LocalStorage -->
-      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             <i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Tersimpan
           </h3>
-          <button onclick="clearHistory()" class="text-[11px] text-rose-500 hover:underline">Hapus Semua</button>
+          <button type="button" onclick="clearHistory()" class="text-[11px] text-rose-500 hover:underline cursor-pointer">Hapus Semua</button>
         </div>
-        <div id="historyList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs text-slate-600">
+        <div id="historyList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs text-slate-600 dark:text-slate-300">
           <p class="text-slate-400 italic text-xs">Belum ada riwayat materi.</p>
         </div>
       </div>
@@ -202,70 +260,77 @@
     <section class="lg:col-span-7 space-y-4">
 
       <!-- Placeholder Awal -->
-      <div id="emptyState" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center my-auto flex flex-col items-center justify-center min-h-[440px] no-print">
-        <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-4">
-          <i class="fa-solid fa-Chalkboard-user fa-chalkboard-user"></i>
+      <div id="emptyState" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-8 sm:p-10 text-center my-auto flex flex-col items-center justify-center min-h-[430px] no-print transition-colors">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-3xl mb-4">
+          <i class="fa-solid fa-chalkboard-user"></i>
         </div>
-        <h3 class="text-base font-bold text-slate-800">All-in-One: Ringkasan, Slide PPT Auto-Fit & 10 Soal Kuis</h3>
-        <p class="text-xs text-slate-500 max-w-md mt-1.5 leading-relaxed">
-          Unggah file presentasi <strong>.PPTX</strong>, dokumen <strong>.PDF</strong>, <strong>.DOCX</strong>, atau tempelkan teks materi. Sistem otomatis merancang <strong>Ringkasan Terstruktur</strong>, <strong>Slide Presentasi PPT proporsional (siap unduh `.pptx`)</strong>, dan <strong>10 Soal Kuis</strong> tanpa kendala kuota.
+        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">Ringkasan Materi, Slide PPT Auto-Fit & 10 Kuis</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mt-1.5 leading-relaxed">
+          Unggah file presentasi <strong>.PPTX</strong>, dokumen <strong>.PDF</strong>, <strong>.DOCX</strong>, atau klik <strong>Muat Contoh</strong>. Sistem otomatis menyusun ringkasan eksekutif, slide presentasi proporsional (`.pptx`), dan 10 soal latihan lengkap dengan pembahasan.
         </p>
+        <button
+          type="button"
+          onclick="loadSampleAndRun()"
+          class="mt-5 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-bold transition cursor-pointer"
+        >
+          <i class="fa-solid fa-play mr-1"></i> Uji Coba Instan dengan Materi Contoh
+        </button>
       </div>
 
       <!-- Loading State -->
-      <div id="loadingState" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-10 text-center min-h-[440px] flex flex-col items-center justify-center no-print">
-        <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-        <h3 id="loadingTitle" class="text-sm font-bold text-slate-800">Menganalisis Materi & Menyusun Slide PPT + 10 Kuis...</h3>
-        <p id="loadingSub" class="text-xs text-slate-500 mt-1">Menyesuaikan tata letak halaman dan ukuran proporsional huruf slide...</p>
+      <div id="loadingState" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-10 text-center min-h-[430px] flex flex-col items-center justify-center no-print">
+        <div class="w-12 h-12 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin mb-4"></div>
+        <h3 id="loadingTitle" class="text-sm font-bold text-slate-800 dark:text-slate-100">Menganalisis Materi & Menyusun Slide PPT + 10 Kuis...</h3>
+        <p id="loadingSub" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Menyesuaikan proporsi huruf dan tata letak halaman slide 16:9...</p>
       </div>
 
       <!-- Result Container -->
       <div id="resultContainer" class="hidden space-y-4">
 
         <!-- Action Bar & Mode Switcher -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 space-y-2.5 no-print">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 space-y-2.5 no-print transition-colors">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-xl">
-              <button onclick="switchTab('summary')" id="tabSummary" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm transition">
+            <div class="flex flex-wrap items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button type="button" onclick="switchTab('summary')" id="tabSummary" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
                 <i class="fa-solid fa-list-check mr-1"></i> Ringkasan
               </button>
-              <button onclick="switchTab('ppt')" id="tabPpt" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
-                <i class="fa-solid fa-display mr-1 text-orange-600"></i> Slide PPT
+              <button type="button" onclick="switchTab('ppt')" id="tabPpt" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+                <i class="fa-solid fa-display mr-1 text-orange-500"></i> Slide PPT
               </button>
-              <button onclick="switchTab('interactive')" id="tabInteractive" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+              <button type="button" onclick="switchTab('interactive')" id="tabInteractive" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
                 <i class="fa-solid fa-gamepad mr-1"></i> Kuis Interaktif (10)
               </button>
-              <button onclick="switchTab('paper')" id="tabPaper" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+              <button type="button" onclick="switchTab('paper')" id="tabPaper" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
                 <i class="fa-solid fa-file-lines mr-1"></i> Lembar Soal
               </button>
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button onclick="speakSummary()" id="ttsBtn" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition" title="Bacakan Ringkasan (TTS)">
+              <button type="button" onclick="speakSummary()" id="ttsBtn" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer" title="Bacakan Ringkasan (TTS)">
                 <i class="fa-solid fa-volume-high"></i> Suara
               </button>
-              <button onclick="copyAllOutput()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition" title="Salin Teks">
+              <button type="button" onclick="copyAllOutput()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition cursor-pointer" title="Salin Teks">
                 <i class="fa-regular fa-copy"></i> Salin
               </button>
             </div>
           </div>
 
           <!-- Baris Ekspor Dokumen (PPTX, Word, Excel, PDF) -->
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-            <span id="engineUsedLabel" class="text-[11px] font-bold text-slate-500">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <span id="engineUsedLabel" class="text-[11px] font-bold text-slate-500 dark:text-slate-400">
               <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Siap Diunduh:
             </span>
             <div class="flex flex-wrap items-center gap-1.5">
-              <button onclick="exportToPPTX()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 hover:bg-orange-700 text-white shadow-xs transition flex items-center gap-1.5">
+              <button type="button" onclick="exportToPPTX()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 hover:bg-orange-700 text-white shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-file-powerpoint"></i> Unduh PPT (.pptx)
               </button>
-              <button onclick="exportToWord()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition flex items-center gap-1.5">
+              <button type="button" onclick="exportToWord()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-file-word"></i> Word (.doc)
               </button>
-              <button onclick="exportToExcel()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
+              <button type="button" onclick="exportToExcel()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-file-excel"></i> Excel (.csv)
               </button>
-              <button onclick="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition flex items-center gap-1.5">
+              <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-print"></i> Cetak PDF
               </button>
             </div>
@@ -273,29 +338,29 @@
         </div>
 
         <!-- TAB 1: RINGKASAN MATERI -->
-        <div id="viewSummary" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4 card-print">
-          <div class="border-b border-slate-100 pb-3">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Ringkasan Eksekutif Materi</span>
-            <h2 id="summaryTitle" class="text-xl font-extrabold text-slate-900 mt-0.5">-</h2>
+        <div id="viewSummary" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-6 space-y-4 card-print transition-colors">
+          <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Ringkasan Eksekutif Materi</span>
+            <h2 id="summaryTitle" class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">-</h2>
           </div>
 
-          <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl p-4">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-800 mb-1">Gambaran Umum (Intisari)</h4>
-            <p id="summaryOverview" class="text-sm text-slate-700 leading-relaxed"></p>
-          </div>
-
-          <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Poin-Poin Penting Utama</h4>
-            <ul id="summaryKeyPoints" class="space-y-2 text-sm text-slate-700"></ul>
+          <div class="bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300 mb-1">Gambaran Umum (Intisari)</h4>
+            <p id="summaryOverview" class="text-sm text-slate-700 dark:text-slate-200 leading-relaxed"></p>
           </div>
 
           <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Definisi & Istilah Kunci</h4>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">Poin-Poin Penting Utama</h4>
+            <ul id="summaryKeyPoints" class="space-y-2 text-sm text-slate-700 dark:text-slate-200"></ul>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">Definisi & Istilah Kunci</h4>
             <div id="summaryTerms" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
           </div>
 
-          <div id="groundingSourcesBox" class="hidden pt-3 border-t border-slate-200/80">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-2 flex items-center gap-1.5">
+          <div id="groundingSourcesBox" class="hidden pt-3 border-t border-slate-200/80 dark:border-slate-800">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
               <i class="fa-brands fa-google"></i> Sumber Referensi Pencarian Web
             </h4>
             <div id="groundingSourcesList" class="flex flex-wrap gap-2"></div>
@@ -303,72 +368,70 @@
         </div>
 
         <!-- TAB 2: SLIDE PRESENTASI PPT (AUTO-FIT CANVAS 16:9) -->
-        <div id="viewPpt" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4 no-print">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div id="viewPpt" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-4 no-print transition-colors">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                <i class="fa-solid fa-display text-orange-600"></i> Pratinjau Slide Presentasi (Auto-Fit 16:9)
+              <h3 class="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                <i class="fa-solid fa-display text-orange-500"></i> Pratinjau Slide Presentasi (Auto-Fit 16:9)
               </h3>
-              <p class="text-[11px] text-slate-500">Ukuran huruf dan kerapatan ruang menyesuaikan otomatis dengan luas halaman slide.</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Ukuran huruf dan kerapatan ruang menyesuaikan otomatis dengan luas halaman slide.</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="prevSlide()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs font-bold">
+              <button type="button" onclick="prevSlide()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold cursor-pointer">
                 <i class="fa-solid fa-chevron-left"></i>
               </button>
-              <span id="slideCounterText" class="text-xs font-bold text-slate-700 px-2">1 / 7</span>
-              <button onclick="nextSlide()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs font-bold">
+              <span id="slideCounterText" class="text-xs font-bold text-slate-700 dark:text-slate-200 px-2">1 / 7</span>
+              <button type="button" onclick="nextSlide()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold cursor-pointer">
                 <i class="fa-solid fa-chevron-right"></i>
               </button>
-              <button onclick="toggleFullscreenSlide()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-slate-700 text-xs font-bold ml-1" title="Layar Penuh">
+              <button type="button" onclick="toggleFullscreenSlide()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white hover:opacity-90 text-xs font-bold ml-1 cursor-pointer" title="Layar Penuh">
                 <i class="fa-solid fa-expand"></i>
               </button>
             </div>
           </div>
 
           <!-- Kanvas Slide 16:9 Proporsional -->
-          <div id="slideStageWrapper" class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-slate-900">
-            <div id="slideCanvas" class="slide-aspect p-6 sm:p-8 flex flex-col justify-between transition-all duration-200">
-              <!-- Diisi dinamis oleh renderSlideDeck() -->
-            </div>
+          <div id="slideStageWrapper" class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700 bg-slate-900">
+            <div id="slideCanvas" class="slide-aspect p-5 sm:p-8 flex flex-col justify-between transition-all duration-200"></div>
           </div>
 
           <!-- Thumbnail Navigasi Slide -->
-          <div id="slideThumbnails" class="grid grid-cols-7 gap-2 pt-1"></div>
+          <div id="slideThumbnails" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 pt-1"></div>
         </div>
 
         <!-- TAB 3: KUIS INTERAKTIF 10 SOAL -->
-        <div id="viewInteractive" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5 no-print">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div id="viewInteractive" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-6 space-y-5 no-print transition-colors">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
-              <h3 class="font-bold text-slate-900 text-base">Uji Pemahaman Interaktif (10 Pertanyaan)</h3>
-              <p class="text-xs text-slate-500">Pilih atau isi jawaban Anda, lalu klik Periksa Skor untuk melihat pembahasan.</p>
+              <h3 class="font-bold text-slate-900 dark:text-white text-base">Uji Pemahaman Interaktif (10 Pertanyaan)</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Pilih atau isi jawaban Anda, lalu klik Periksa Skor untuk melihat pembahasan.</p>
             </div>
             <div id="scoreBadge" class="hidden px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white font-extrabold text-sm">
               Skor: 0 / 100
             </div>
           </div>
 
-          <div id="interactiveQuizList" class="space-y-5"></div>
+          <div id="interactiveQuizList" class="space-y-4"></div>
 
-          <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
-            <button onclick="resetInteractiveQuiz()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100">
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+            <button type="button" onclick="resetInteractiveQuiz()" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
               Ulangi Kuis
             </button>
-            <button onclick="checkInteractiveScore()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm">
+            <button type="button" onclick="checkInteractiveScore()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer">
               <i class="fa-solid fa-check-double mr-1"></i> Periksa Jawaban & Skor
             </button>
           </div>
         </div>
 
         <!-- TAB 4: LEMBAR SOAL & KUNCI JAWABAN (SIAP CETAK) -->
-        <div id="viewPaper" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-6 card-print">
-          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div id="viewPaper" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-6 space-y-6 card-print transition-colors">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-base">Daftar 10 Pertanyaan Kuis & Kunci Jawaban</h3>
-              <p class="text-xs text-slate-500">Format siap salin dan cetak untuk evaluasi pembelajaran</p>
+              <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Daftar 10 Pertanyaan Kuis & Kunci Jawaban</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Format siap salin dan cetak untuk evaluasi pembelajaran</p>
             </div>
-            <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer no-print">
-              <input type="checkbox" id="toggleAnswerKey" checked onchange="toggleAnswerKeyVisibility()" class="rounded text-indigo-600" />
+            <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer no-print">
+              <input type="checkbox" id="toggleAnswerKey" checked onchange="toggleAnswerKeyVisibility()" class="rounded accent-indigo-600" />
               Tampilkan Kunci & Pembahasan
             </label>
           </div>
@@ -381,106 +444,127 @@
   </main>
 
   <!-- FOOTER -->
-  <footer class="bg-white border-t border-slate-200 py-4 px-4 text-center text-xs text-slate-500 no-print mt-8">
+  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400 no-print mt-8 transition-colors">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
       <p>&copy; 2026 <strong>Arraihan Academy (SWK)</strong>. All rights reserved.</p>
-      <p class="text-slate-400">Smart PPTX/PDF Summary & Quiz Engine — Zero Quota-Failure Architecture</p>
+      <p class="text-slate-400 dark:text-slate-500">Smart PPTX/PDF Summary & Quiz Engine — Zero Quota-Failure Architecture</p>
     </div>
   </footer>
 
-  <!-- MODAL PENGATURAN API KEY & MODEL GEMINI RESMI -->
-  <div id="apiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-indigo-600"></i> Konfigurasi Mesin AI & API Key
+  <!-- MODAL PENGATURAN MESIN & API KEY -->
+  <div id="apiModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+        <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-600 dark:text-indigo-400"></i> Pengaturan Mesin AI & API Key
         </h3>
-        <button onclick="closeApiModal()" class="text-slate-400 hover:text-slate-600">
+        <button type="button" onclick="closeApiModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
-      <p class="text-xs text-slate-500 leading-relaxed">
-        Masukkan API Key dari <strong>Google AI Studio</strong>. Jika API Key kosong atau sedang mencapai batas kuota harian Google, aplikasi otomatis memproses materi menggunakan <strong>Mesin NLP Lokal Instan</strong> tanpa gagal.
+
+      <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+        Masukkan API Key dari <strong>Google AI Studio</strong>. Jika dikosongkan atau kuota API harian Anda sedang habis, aplikasi otomatis memproses dengan <strong>Mesin NLP Lokal Instan</strong> tanpa gagal.
       </p>
+
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Google Gemini API Key (Opsional pada Mode Lokal)</label>
-        <input
-          type="password"
-          id="apiKeyInput"
-          placeholder="AIzaSy..."
-          class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono outline-none focus:border-indigo-600"
-        />
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Google Gemini API Key</label>
+        <div class="flex gap-2">
+          <input
+            type="password"
+            id="apiKeyInput"
+            placeholder="AIzaSy..."
+            class="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs font-mono outline-none focus:border-indigo-600"
+          />
+          <button
+            type="button"
+            onclick="toggleShowApiKey()"
+            class="px-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-white text-xs cursor-pointer"
+            title="Lihat/Sembunyikan Key"
+          >
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
       </div>
+
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Model Resmi Google AI Studio (Free Tier)</label>
-        <select id="modelSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold bg-white">
-          <option value="gemini-2.5-flash">gemini-2.5-flash (Resmi Terbaik & Kuota Stabil - Rekomendasi)</option>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Pilih Model Resmi Google AI Studio (Free Tier)</label>
+        <select id="modelSelect" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-2.5 text-xs font-semibold outline-none">
+          <option value="gemini-2.5-flash">gemini-2.5-flash (Resmi Terbaik & Stabil - Rekomendasi)</option>
           <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Super Cepat & Kuota Harian Terbesar)</option>
           <option value="gemini-2.0-flash">gemini-2.0-flash (Alternatif Cepat & Handal)</option>
           <option value="gemini-1.5-flash">gemini-1.5-flash (Cadangan Kuota Luas)</option>
         </select>
       </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeApiModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
-        <button onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">Simpan Konfigurasi</button>
+
+      <div id="apiTestStatus" class="hidden p-2.5 rounded-xl text-xs font-medium"></div>
+
+      <div class="flex justify-between items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <button type="button" onclick="testApiKeyConnection()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
+          <i class="fa-solid fa-plug-circle-check mr-1"></i> Tes Koneksi Key
+        </button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeApiModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">Batal</button>
+          <button type="button" onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer">Simpan</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- MODAL LISENSI & TRIAL LOCK -->
   <div id="licenseModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
             <i class="fa-solid fa-award text-lg"></i>
           </div>
           <div>
-            <h3 class="font-extrabold text-slate-900 text-base">Aktivasi Lisensi Resmi</h3>
-            <p class="text-[11px] text-slate-500">Arraihan Academy (SWK) Licensing System</p>
+            <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Aktivasi Lisensi Resmi</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Arraihan Academy (SWK) Licensing System</p>
           </div>
         </div>
-        <button id="closeLicenseBtn" onclick="closeLicenseModal()" class="text-slate-400 hover:text-slate-600">
+        <button type="button" id="closeLicenseBtn" onclick="closeLicenseModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <div id="licenseModalAlert" class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 leading-relaxed">
+      <div id="licenseModalAlert" class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
         Masa uji coba (Demo 5 Hari) sedang berjalan. Masukkan <strong>Serial Key</strong> dari Keygen Arraihan Academy untuk mengaktifkan lisensi penuh permanen.
       </div>
 
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+      <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
         <div>
           <span class="text-[10px] uppercase font-bold text-slate-400 block">Device ID Perangkat Anda</span>
-          <span id="modalDeviceId" class="font-mono font-bold text-sm text-slate-900 select-all">---</span>
+          <span id="modalDeviceId" class="font-mono font-bold text-sm text-slate-900 dark:text-white select-all">---</span>
         </div>
-        <button onclick="copyDeviceId()" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold hover:bg-slate-100">
+        <button type="button" onclick="copyDeviceId()" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-xs font-semibold hover:bg-slate-100 cursor-pointer">
           <i class="fa-regular fa-copy mr-1"></i> Salin ID
         </button>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Pengguna / Instansi</label>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Nama Pengguna / Instansi</label>
         <input
           type="text"
           id="licenseUserInput"
           placeholder="Contoh: LKP Ar-Raihan / Puskesmas / Sekolah"
-          class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs outline-none focus:border-indigo-600"
+          class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3.5 py-2 text-xs outline-none focus:border-indigo-600"
         />
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Kode Lisensi (Serial Key)</label>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Kode Lisensi (Serial Key)</label>
         <input
           type="text"
           id="licenseKeyInput"
           placeholder="ARRAIHAN-XXXX-XXXX-XXXX"
-          class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono uppercase outline-none focus:border-indigo-600"
+          class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs font-mono uppercase outline-none focus:border-indigo-600"
         />
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="activateLicense()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-md">
+        <button type="button" onclick="activateLicense()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-md cursor-pointer">
           <i class="fa-solid fa-unlock-keyhole mr-1"></i> Verifikasi & Aktifkan Lisensi
         </button>
       </div>
@@ -489,7 +573,7 @@
 
   <script>
     // =========================================================================
-    // 1. SISTEM LISENSI & DEMO 5 HARI (SINKRON DENGAN KEYGEN ARRAIHAN ACADEMY)
+    // 1. KONFIGURASI UTAMA, TEMA GELAP/TERANG & SISTEM LISENSI 5 HARI
     // =========================================================================
     const APP_SALT = "ARRAIHAN_SWK_QUIZ_PRO_2026";
     const TRIAL_DAYS = 5;
@@ -502,8 +586,9 @@
       LICENSE_KEY: "swk_sq_license_key",
       LICENSE_USER: "swk_sq_license_user",
       API_KEY: "swk_sq_gemini_api_key",
-      MODEL: "swk_sq_gemini_model_v4",
+      MODEL: "swk_sq_gemini_model_v5",
       ENGINE_MODE: "swk_sq_engine_mode",
+      THEME: "swk_sq_theme_mode",
       HISTORY: "swk_sq_history_v2"
     };
 
@@ -513,6 +598,34 @@
     let isTrialExpired = false;
     let engineMode = localStorage.getItem(STORAGE_KEYS.ENGINE_MODE) || "hybrid";
 
+    // Mode Terang & Gelap
+    function initTheme() {
+      const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || "light";
+      applyTheme(savedTheme);
+    }
+
+    function applyTheme(mode) {
+      const root = document.documentElement;
+      const icon = document.getElementById("themeIcon");
+      const text = document.getElementById("themeText");
+      if (mode === "dark") {
+        root.classList.add("dark");
+        if (icon) icon.className = "fa-solid fa-sun text-amber-400";
+        if (text) text.textContent = "Mode Terang";
+      } else {
+        root.classList.remove("dark");
+        if (icon) icon.className = "fa-solid fa-moon text-indigo-600";
+        if (text) text.textContent = "Mode Gelap";
+      }
+      localStorage.setItem(STORAGE_KEYS.THEME, mode);
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      applyTheme(isDark ? "light" : "dark");
+    }
+
+    // Lisensi & Device ID
     function getOrCreateDeviceId() {
       let devId = localStorage.getItem(STORAGE_KEYS.DEVICE_ID);
       if (!devId) {
@@ -538,7 +651,7 @@
       h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
       const hex1 = (h1 >>> 0).toString(16).toUpperCase().padStart(8, "0");
       const hex2 = (h2 >>> 0).toString(16).toUpperCase().padStart(8, "0");
-      return `ARRAIHAN-${hex1.slice(0, 4)}-${hex1.slice(4, 8)}-${hex2.slice(0, 4)}`;
+      return "ARRAIHAN-" + hex1.slice(0, 4) + "-" + hex1.slice(4, 8) + "-" + hex2.slice(0, 4);
     }
 
     function checkLicenseStatus() {
@@ -560,7 +673,7 @@
       if (savedKey.trim().toUpperCase() === expectedKey) {
         isTrialExpired = false;
         badge.className = "bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2.5 py-0.5 rounded-full font-semibold";
-        badge.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Full Version (${savedUser})`;
+        badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Full Version (' + savedUser + ')';
         return true;
       }
 
@@ -572,20 +685,20 @@
         isTrialExpired = false;
         const daysLeft = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
         const hoursLeft = Math.ceil(remainingMs / (1000 * 60 * 60));
-        const label = daysLeft > 1 ? `${daysLeft} Hari` : `${hoursLeft} Jam`;
+        const label = daysLeft > 1 ? daysLeft + " Hari" : hoursLeft + " Jam";
         badge.className = "bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-semibold";
-        badge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Demo Aktif (Sisa ${label})`;
+        badge.innerHTML = '<i class="fa-solid fa-hourglass-half mr-1"></i> Demo Aktif (Sisa ' + label + ')';
         return true;
       } else {
         isTrialExpired = true;
         badge.className = "bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-semibold";
-        badge.innerHTML = `<i class="fa-solid fa-lock mr-1"></i> Masa Demo 5 Hari Habis`;
+        badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Masa Demo 5 Hari Habis';
         openLicenseModal(true);
         return false;
       }
     }
 
-    function openLicenseModal(forceLock = false) {
+    function openLicenseModal(forceLock) {
       const modal = document.getElementById("licenseModal");
       const closeBtn = document.getElementById("closeLicenseBtn");
       const alertBox = document.getElementById("licenseModalAlert");
@@ -594,8 +707,8 @@
 
       if (forceLock || isTrialExpired) {
         closeBtn.classList.add("hidden");
-        alertBox.className = "p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 leading-relaxed font-medium";
-        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Masa Demo 5 Hari Telah Berakhir!</strong> Silakan salin <strong>Device ID</strong> Anda dan gunakan aplikasi Keygen Arraihan Academy untuk membuka akses penuh.`;
+        alertBox.className = "p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-200 leading-relaxed font-medium";
+        alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Masa Demo 5 Hari Telah Berakhir!</strong> Silakan salin <strong>Device ID</strong> Anda dan gunakan aplikasi Keygen Arraihan Academy untuk membuka akses penuh.';
       } else {
         closeBtn.classList.remove("hidden");
       }
@@ -633,7 +746,7 @@
     }
 
     // =========================================================================
-    // 2. PENGATURAN MESIN AI & EKSTRAKSI MULTI-FORMAT (PPTX, PDF, DOCX, TXT)
+    // 2. PENGATURAN MESIN AI & MODAL API KEY
     // =========================================================================
     function getSafeModel() {
       let saved = localStorage.getItem(STORAGE_KEYS.MODEL);
@@ -652,15 +765,15 @@
       const pill = document.getElementById("activeModelPill");
 
       if (mode === "local") {
-        btnLocal.className = "py-2 px-2.5 rounded-lg text-xs font-bold bg-white text-amber-700 shadow-xs transition flex items-center justify-center gap-1.5";
-        btnCloud.className = "py-2 px-2.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5";
+        btnLocal.className = "py-2 px-2.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer";
+        btnCloud.className = "py-2 px-2.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer";
         pill.textContent = "Engine Lokal (0 Kuota)";
-        pill.className = "text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-semibold";
+        pill.className = "text-[11px] bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-2.5 py-0.5 rounded-full font-semibold";
       } else {
-        btnCloud.className = "py-2 px-2.5 rounded-lg text-xs font-bold bg-white text-indigo-700 shadow-xs transition flex items-center justify-center gap-1.5";
-        btnLocal.className = "py-2 px-2.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5";
+        btnCloud.className = "py-2 px-2.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer";
+        btnLocal.className = "py-2 px-2.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer";
         pill.textContent = getSafeModel();
-        pill.className = "text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold";
+        pill.className = "text-[11px] bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full font-semibold";
       }
     }
 
@@ -671,15 +784,16 @@
       setEngineMode(engineMode);
 
       if (key && key.startsWith("AIza")) {
-        statusText.innerHTML = `<span class="text-emerald-600 font-bold">API Siap (${model})</span>`;
+        statusText.innerHTML = 'API Siap (' + model.replace("gemini-", "") + ')';
       } else {
-        statusText.innerHTML = `<span class="text-slate-700 font-semibold">Mode Hybrid / Lokal Aktif</span>`;
+        statusText.innerHTML = 'Pengaturan & API';
       }
     }
 
     function openApiModal() {
       document.getElementById("apiKeyInput").value = localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
       document.getElementById("modelSelect").value = getSafeModel();
+      document.getElementById("apiTestStatus").classList.add("hidden");
       const modal = document.getElementById("apiModal");
       modal.classList.remove("hidden");
       modal.classList.add("flex");
@@ -689,6 +803,45 @@
       const modal = document.getElementById("apiModal");
       modal.classList.add("hidden");
       modal.classList.remove("flex");
+    }
+
+    function toggleShowApiKey() {
+      const input = document.getElementById("apiKeyInput");
+      input.type = input.type === "password" ? "text" : "password";
+    }
+
+    async function testApiKeyConnection() {
+      const key = document.getElementById("apiKeyInput").value.trim();
+      const model = document.getElementById("modelSelect").value;
+      const statusBox = document.getElementById("apiTestStatus");
+      statusBox.classList.remove("hidden");
+
+      if (!key) {
+        statusBox.className = "p-2.5 rounded-xl text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200";
+        statusBox.textContent = "API Key kosong. Aplikasi akan berjalan menggunakan Mesin Lokal Instan (0 Kuota).";
+        return;
+      }
+
+      statusBox.className = "p-2.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700";
+      statusBox.textContent = "Menguji koneksi ke " + model + "...";
+
+      try {
+        const res = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: "Halo" }] }] })
+          }
+        );
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message);
+        statusBox.className = "p-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200";
+        statusBox.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Koneksi API Key Berhasil & Kuota Aktif!';
+      } catch (err) {
+        statusBox.className = "p-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200";
+        statusBox.textContent = "Info API: " + err.message + " (Aplikasi tetap bisa digunakan dengan Auto-Fallback Lokal).";
+      }
     }
 
     function saveApiKey() {
@@ -716,13 +869,33 @@
       }
     }
 
+    // Muat Contoh Materi Cepat
+    function loadSampleMaterial() {
+      const sample = `PEDOMAN TATALAKSANA & PENGENDALIAN MALARIA TERPADU
+Malaria adalah penyakit infeksi menular yang disebabkan oleh parasit Plasmodium yang hidup dan berkembang biak di dalam sel darah merah manusia, ditularkan melalui gigitan nyamuk Anopheles betina.
+Lima spesies Plasmodium penginfeksi manusia meliputi Plasmodium falciparum (penyebab malaria tropika atau malaria berat), Plasmodium vivax (penyebab malaria tersiana yang memiliki fase dorman hipnozoit di sel hati), Plasmodium malariae, Plasmodium ovale, dan Plasmodium knowlesi.
+Gejala klinis klasik dikenal sebagai Trias Malaria yang terdiri dari periode dingin (menggigil 15-60 menit), periode panas (demam tinggi lebih dari 37,5 derajat Celcius), dan periode berkeringat.
+Standar baku emas (Gold Standard) penegakan diagnosis pasti malaria adalah pemeriksaan mikroskopis sediaan darah tetes tebal dan hapusan tipis, atau menggunakan Rapid Diagnostic Test (RDT) bila mikroskop belum tersedia.
+Pengobatan lini pertama malaria tanpa komplikasi di Indonesia menggunakan ACT (Artemisinin-based Combination Therapy) berupa DHP (Dihidroartemisinin-Piperakuin) selama 3 hari dikombinasikan dengan Primakuin.
+Pada infeksi Plasmodium falciparum, Primakuin diberikan dosis tunggal 1 hari untuk membunuh gametosit. Pada infeksi Plasmodium vivax dan ovale, Primakuin diberikan selama 14 hari untuk mengeradikasi hipnozoit di hati guna mencegah kekambuhan (relaps).
+Kelompok risiko tinggi meliputi ibu hamil, bayi, dan balita. Ibu hamil yang terkonfirmasi positif malaria diobati dengan DHP selama 3 hari tanpa Primakuin karena Primakuin dikontraindikasikan pada kehamilan.
+Pengendalian vektor terpadu dilakukan melalui pembagian Kelambu Berinsektisida Jangka Panjang (LLINs), Penyemprotan Dinding Rumah (Indoor Residual Spraying / IRS), dan pemantauan indikator Annual Parasite Incidence (API).`;
+      document.getElementById("materialInput").value = sample;
+      updateCharCount();
+    }
+
+    function loadSampleAndRun() {
+      loadSampleMaterial();
+      generateSummaryAndQuiz();
+    }
+
     // Ekstraksi File PowerPoint (.pptx), Word (.docx), PDF (.pdf), dan TXT/CSV
     async function handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
       const ext = file.name.split(".").pop().toLowerCase();
       const label = document.getElementById("fileNameLabel");
-      label.textContent = `Mengekstrak isi file ${file.name}...`;
+      label.textContent = "Mengekstrak isi file " + file.name + "...";
 
       try {
         let extractedText = "";
@@ -758,7 +931,7 @@
             }
 
             if (slideLines.length > 0) {
-              extractedText += `[SLIDE ${slide.num}] ${slideLines[0]}\n` + slideLines.slice(1).map(l => `- ${l}`).join("\n") + "\n\n";
+              extractedText += "[SLIDE " + slide.num + "] " + slideLines[0] + "\n" + slideLines.slice(1).map(l => "- " + l).join("\n") + "\n\n";
             }
           }
         } else if (ext === "docx") {
@@ -800,7 +973,7 @@
 
         document.getElementById("materialInput").value = cleaned;
         document.getElementById("useWebSearchToggle").checked = false;
-        label.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Berhasil diekstrak: ${file.name}</span>`;
+        label.innerHTML = '<span class="text-emerald-600 dark:text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Berhasil diekstrak: ' + file.name + '</span>';
         updateCharCount();
       } catch (err) {
         alert("Gagal membaca file: " + err.message);
@@ -817,15 +990,13 @@
       if (firstLine.length > 75) firstLine = firstLine.slice(0, 72) + "...";
       const title = firstLine || "Ringkasan Materi & Evaluasi";
 
-      // Pecah kalimat bersih yang bermakna
       const rawSentences = rawText
         .replace(/\[SLIDE \d+\]/gi, ". ")
         .replace(/\n+/g, ". ")
         .split(/(?<=[.!?])\s+|\.\s+/)
         .map(s => s.replace(/^[-*•\d.)]+\s*/, "").trim())
-        .filter(s => s.length >= 35 && s.length <= 260 && !/^(http|www\.)/i.test(s));
+        .filter(s => s.length >= 30 && s.length <= 260 && !/^(http|www\.)/i.test(s));
 
-      // Hilangkan duplikat kalimat
       const uniqueSentences = [];
       const seen = new Set();
       for (const s of rawSentences) {
@@ -838,16 +1009,15 @@
 
       if (uniqueSentences.length < 6) {
         uniqueSentences.push(
-          `Materi ${title} membahas konsep dasar, prinsip pelaksanaan, serta prosedur standar yang wajib dipahami secara sistematis.`,
-          `Penerapan pedoman pada ${title} bertujuan meningkatkan kualitas hasil, ketepatan analisis, serta efektivitas evaluasi di lapangan.`,
-          `Identifikasi indikator kunci dalam ${title} menjadi landasan pengambilan keputusan yang akurat dan terukur.`,
-          `Pengendalian faktor risiko serta kepatuhan terhadap standar operasional sangat menentukan keberhasilan implementasi materi ini.`,
-          `Evaluasi berkala dan pemantauan indikator capaian diperlukan untuk memastikan kesinambungan mutu pembelajaran dan layanan.`,
-          `Sinergi antar komponen pelaksana mendukung tercapainya target utama sesuai regulasi dan pedoman teknis yang berlaku.`
+          "Materi " + title + " membahas konsep dasar, prinsip pelaksanaan, serta prosedur standar yang wajib dipahami secara sistematis.",
+          "Penerapan pedoman pada " + title + " bertujuan meningkatkan kualitas hasil, ketepatan analisis, serta efektivitas evaluasi di lapangan.",
+          "Identifikasi indikator kunci dalam " + title + " menjadi landasan pengambilan keputusan yang akurat dan terukur.",
+          "Pengendalian faktor risiko serta kepatuhan terhadap standar operasional sangat menentukan keberhasilan implementasi materi ini.",
+          "Evaluasi berkala dan pemantauan indikator capaian diperlukan untuk memastikan kesinambungan mutu pembelajaran dan layanan.",
+          "Sinergi antar komponen pelaksana mendukung tercapainya target utama sesuai regulasi dan pedoman teknis yang berlaku."
         );
       }
 
-      // Skor kalimat berdasarkan kata kunci penting
       const scored = uniqueSentences.map((s, idx) => {
         let score = 0;
         if (idx < 4) score += 3;
@@ -860,22 +1030,17 @@
       const topSentences = scored.slice(0, 8).sort((a, b) => a.idx - b.idx).map(x => x.text);
 
       const overview = topSentences.slice(0, 3).join(" ");
-      const keyPoints = topSentences.slice(0, 6).map(s => s.length > 160 ? s.slice(0, 157) + "..." : s);
+      const keyPoints = topSentences.slice(0, 6).map(s => s.length > 165 ? s.slice(0, 162) + "..." : s);
 
-      // Ekstrak Istilah Kunci & Definisi
       const keyTerms = [];
-      const defRegex = /^([A-ZA-Za-z0-9\s()/&-]{3,40})\s+(?:adalah|merupakan|yaitu|:|-)\s+(.{20,160})/i;
+      const defRegex = /^([A-Za-z0-9\s()/&-]{3,40})\s+(?:adalah|merupakan|yaitu|:|-)\s+(.{20,160})/i;
       for (const s of uniqueSentences) {
         const m = s.match(defRegex);
         if (m && keyTerms.length < 6) {
-          keyTerms.push({
-            term: m[1].trim(),
-            definition: m[2].trim()
-          });
+          keyTerms.push({ term: m[1].trim(), definition: m[2].trim() });
         }
       }
 
-      // Jika definisi eksplisit kurang dari 4, ambil dari frasa penting
       const fallbackTerms = [
         { term: "Konsep Utama Materi", definition: keyPoints[0] || overview },
         { term: "Indikator & Standar", definition: keyPoints[1] || "Tolok ukur keberhasilan pelaksanaan prosedur sesuai pedoman." },
@@ -886,14 +1051,13 @@
         keyTerms.push(fallbackTerms[keyTerms.length]);
       }
 
-      // Susun 7 Slide Presentasi Proporsional
       const slides = [
         {
           slideNumber: 1,
           layout: "cover",
           title: title,
           subtitle: "Ringkasan Eksekutif & Poin Strategis Pembelajaran",
-          bullets: ["Disusun otomatis oleh Summary & PPT Generator Pro — Arraihan Academy (SWK)"]
+          bullets: ["Disusun otomatis oleh Summary, PPT & Quiz Generator Pro — Arraihan Academy (SWK)"]
         },
         {
           slideNumber: 2,
@@ -921,7 +1085,7 @@
           layout: "terms",
           title: "Definisi & Istilah Kunci",
           subtitle: "Glosarium Materi",
-          bullets: keyTerms.slice(0, 4).map(t => `${t.term}: ${t.definition}`)
+          bullets: keyTerms.slice(0, 4).map(t => t.term + ": " + t.definition)
         },
         {
           slideNumber: 6,
@@ -929,9 +1093,9 @@
           title: "Analisis & Fokus Evaluasi",
           subtitle: "Penerapan Pemahaman Materi",
           bullets: [
-            `Memahami struktur inti dan tujuan utama dari ${title}.`,
-            `Mengidentifikasi langkah kritis, standar prosedur, dan faktor risiko utama.`,
-            `Menerapkan evaluasi berbasis indikator yang terukur dan akurat.`
+            "Memahami struktur inti dan tujuan utama dari " + title + ".",
+            "Mengidentifikasi langkah kritis, standar prosedur, dan faktor risiko utama.",
+            "Menerapkan evaluasi berbasis indikator yang terukur dan akurat."
           ]
         },
         {
@@ -946,7 +1110,6 @@
         }
       ];
 
-      // Bangun 10 Soal Kuis Komprehensif dari Fakta Materi
       const distractorsPool = [
         "Mengabaikan verifikasi standar awal dan langsung melakukan tindakan tanpa prosedur pemeriksaan",
         "Mengandalkan asumsi subjektif tanpa didukung data maupun indikator yang terukur",
@@ -963,11 +1126,11 @@
         const correctLetter = letters[correctIdx];
 
         const stemTemplates = [
-          `Berdasarkan materi "${title}", pernyataan manakah yang paling tepat menggambarkan konsep utama berikut?`,
-          `Dalam konteks pembahasan "${title}", apa prinsip penting yang harus diperhatikan terkait aspek berikut?`,
-          `Manakah analisis yang akurat sesuai isi materi mengenai ketentuan berikut?`,
-          `Apa kesimpulan yang tepat berdasarkan fakta materi pada pembahasan "${title}"?`,
-          `Mengacu pada materi yang dipelajari, langkah atau fakta manakah yang sesuai dengan standar?`
+          'Berdasarkan materi "' + title + '", pernyataan manakah yang paling tepat menggambarkan konsep utama berikut?',
+          'Dalam konteks pembahasan "' + title + '", apa prinsip penting yang harus diperhatikan terkait aspek berikut?',
+          'Manakah analisis yang akurat sesuai isi materi mengenai ketentuan berikut?',
+          'Apa kesimpulan yang tepat berdasarkan fakta materi pada pembahasan "' + title + '"?',
+          'Mengacu pada materi yang dipelajari, langkah atau fakta manakah yang sesuai dengan standar?'
         ];
 
         const cleanFact = fact.length > 135 ? fact.slice(0, 132) + "..." : fact;
@@ -977,20 +1140,20 @@
             number: i + 1,
             type: "essay",
             cognitiveLevel: "Analisis & Aplikasi (HOTS)",
-            question: `Jelaskan secara ringkas bagaimana penerapan konsep berikut dalam "${title}" serta dampaknya: "${cleanFact}"!`,
+            question: 'Jelaskan secara ringkas bagaimana penerapan konsep berikut dalam "' + title + '" serta dampaknya: "' + cleanFact + '"!',
             options: [],
             correctAnswer: cleanFact,
-            explanation: `Sesuai uraian materi, poin kunci yang wajib dijelaskan mencakup: ${fact}`
+            explanation: "Sesuai uraian materi, poin kunci yang wajib dijelaskan mencakup: " + fact
           });
         } else {
           const opts = [];
           let dIdx = 0;
           for (let o = 0; o < 4; o++) {
             if (o === correctIdx) {
-              opts.push(`${letters[o]}. ${cleanFact}`);
+              opts.push(letters[o] + ". " + cleanFact);
             } else {
               const dText = distractorsPool[(i + dIdx) % distractorsPool.length];
-              opts.push(`${letters[o]}. ${dText}`);
+              opts.push(letters[o] + ". " + dText);
               dIdx++;
             }
           }
@@ -1002,7 +1165,7 @@
             question: stemTemplates[i % stemTemplates.length],
             options: opts,
             correctAnswer: correctLetter,
-            explanation: `Jawaban ${correctLetter} benar karena sesuai secara langsung dengan fakta inti dalam materi: "${fact}"`
+            explanation: 'Jawaban ' + correctLetter + ' benar karena sesuai secara langsung dengan fakta inti dalam materi: "' + fact + '"'
           });
         }
       }
@@ -1023,8 +1186,8 @@
     // =========================================================================
     function extractJsonFromText(text) {
       if (!text) throw new Error("Respons AI kosong.");
-      const cleaned = text.replace(/
-```json/gi, "").replace(/```/g, "").trim();
+      const fenceRegex = new RegExp("\\x60\\x60\\x60(?:json)?", "gi");
+      const cleaned = text.replace(fenceRegex, "").trim();
       const firstBrace = cleaned.indexOf("{");
       const lastBrace = cleaned.lastIndexOf("}");
       if (firstBrace !== -1 && lastBrace !== -1) {
@@ -1039,7 +1202,7 @@
 
       for (let i = 0; i < modelsToTry.length; i++) {
         const modelName = modelsToTry[i];
-        document.getElementById("loadingTitle").textContent = `Memproses dengan AI (${modelName})...`;
+        document.getElementById("loadingTitle").textContent = "Memproses dengan AI (" + modelName + ")...";
 
         const payload = {
           contents: [{ parts: [{ text: prompt }] }],
@@ -1056,7 +1219,7 @@
 
         try {
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+            "https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent?key=" + apiKey,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -1065,7 +1228,7 @@
           );
           const result = await response.json();
           if (result.error) {
-            throw new Error(`[${modelName}] ${result.error.message}`);
+            throw new Error("[" + modelName + "] " + result.error.message);
           }
           return { result, usedModel: modelName };
         } catch (err) {
@@ -1080,7 +1243,7 @@
 
       const rawText = cleanAndCompressText(document.getElementById("materialInput").value);
       if (!rawText || rawText.length < 4) {
-        alert("Mohon unggah file PPTX/PDF/DOCX atau masukkan teks materi/topik terlebih dahulu.");
+        alert("Mohon unggah file PPTX/PDF/DOCX, klik 'Muat Contoh', atau ketik materi terlebih dahulu.");
         return;
       }
 
@@ -1093,7 +1256,6 @@
       document.getElementById("loadingState").classList.remove("hidden");
       document.getElementById("generateBtn").disabled = true;
 
-      // JIKA MODE LOKAL DIPILIH ATAU TIDAK ADA API KEY -> LANGSUNG PROSES INSTAN (< 0.5 DETIK)
       if (engineMode === "local" || !apiKey) {
         setTimeout(() => {
           const localResult = buildLocalSmartAnalysis(rawText, qType, difficulty);
@@ -1102,11 +1264,10 @@
           saveToHistory(localResult);
           document.getElementById("loadingState").classList.add("hidden");
           document.getElementById("generateBtn").disabled = false;
-        }, 300);
+        }, 250);
         return;
       }
 
-      // JIKA MODE AI CLOUD AKTIF -> COBA GEMINI API, JIKA KUOTA HABIS OTOMATIS FALLBACK KE MESIN LOKAL
       const userCheckedSearch = document.getElementById("useWebSearchToggle").checked;
       const hasUrl = /https?:\/\/[^\s]+/i.test(rawText);
       const useWebSearch = userCheckedSearch && (rawText.length < 500 || hasUrl);
@@ -1118,47 +1279,29 @@
 
       const optimizedMaterial = rawText.slice(0, 16000);
 
-      const prompt = `# Pembuat Ringkasan Materi, Slide PPT & 10 Soal Kuis
-Tugas Anda:
-1. Ekstrak informasi inti dari materi sumber berikut.
-2. Buat ringkasan eksekutif (overview), 6 poin penting utama (keyPoints), dan 4-6 istilah kunci beserta definisinya (keyTerms).
-3. Susun 7 slide presentasi (slides) yang ringkas dan padat agar muat secara proporsional di halaman slide 16:9.
+      const prompt = `Anda adalah Sistem Pembuat Ringkasan Materi, Slide PPT & 10 Soal Kuis.
+Tugas:
+1. Analisis materi sumber berikut.
+2. Susun ringkasan eksekutif (overview), 6 poin penting utama (keyPoints), dan 4-6 istilah kunci beserta definisinya (keyTerms).
+3. Susun 7 slide presentasi (slides) yang padat dan proporsional untuk halaman 16:9.
 4. Buat TEPAT 10 pertanyaan kuis (questions) tingkat kesulitan ${difficulty}. ${formatInstruction}
 
-Kembalikan HANYA format JSON murni sesuai struktur berikut:
+Kembalikan HANYA JSON murni sesuai struktur berikut:
 {
   "title": "Judul Materi",
-  "overview": "Paragraf ringkasan eksekutif (intisari materi)",
+  "overview": "Paragraf ringkasan eksekutif",
   "keyPoints": ["Poin 1", "Poin 2", "Poin 3", "Poin 4", "Poin 5", "Poin 6"],
-  "keyTerms": [
-    {"term": "Istilah 1", "definition": "Penjelasan padat"}
-  ],
+  "keyTerms": [{"term": "Istilah 1", "definition": "Penjelasan padat"}],
   "slides": [
-    {
-      "slideNumber": 1,
-      "layout": "cover",
-      "title": "Judul Slide",
-      "subtitle": "Subjudul singkat",
-      "bullets": ["Poin ringkas 1", "Poin ringkas 2", "Poin ringkas 3"]
-    }
+    {"slideNumber": 1, "layout": "cover", "title": "Judul Slide", "subtitle": "Subjudul", "bullets": ["Poin 1", "Poin 2"]}
   ],
   "questions": [
-    {
-      "number": 1,
-      "type": "pg",
-      "cognitiveLevel": "Pemahaman / Aplikasi / Analisis",
-      "question": "Teks pertanyaan...",
-      "options": ["A. Opsi 1", "B. Opsi 2", "C. Opsi 3", "D. Opsi 4"],
-      "correctAnswer": "A",
-      "explanation": "Pembahasan lengkap mengapa jawaban benar."
-    }
+    {"number": 1, "type": "pg", "cognitiveLevel": "Pemahaman", "question": "Pertanyaan...", "options": ["A. Opsi 1", "B. Opsi 2", "C. Opsi 3", "D. Opsi 4"], "correctAnswer": "A", "explanation": "Pembahasan lengkap."}
   ]
 }
 
 MATERI SUMBER:
-"""
-${optimizedMaterial}
-"""`;
+${optimizedMaterial}`;
 
       try {
         const { result, usedModel } = await callGeminiSmart(apiKey, preferredModel, prompt, useWebSearch, hasUrl);
@@ -1176,9 +1319,8 @@ ${optimizedMaterial}
           }
         });
         parsed.webSources = webSources;
-        parsed.engineSource = `Gemini AI (${usedModel})`;
+        parsed.engineSource = "Gemini AI (" + usedModel + ")";
 
-        // Pastikan slides tersedia jika AI tidak menyertakannya
         if (!parsed.slides || !parsed.slides.length) {
           parsed.slides = buildLocalSmartAnalysis(rawText, qType, difficulty).slides;
         }
@@ -1187,10 +1329,9 @@ ${optimizedMaterial}
         renderOutput(parsed);
         saveToHistory(parsed);
       } catch (err) {
-        // AUTO-FALLBACK KE MESIN LOKAL AGAR PEKERJAAN PENGGUNA TIDAK PERNAH TERHENTI OLEH ERROR KUOTA!
-        console.warn("API Quota limit terdeteksi, beralih otomatis ke Engine Lokal:", err.message);
+        console.warn("Beralih otomatis ke Engine Lokal:", err.message);
         const fallbackData = buildLocalSmartAnalysis(rawText, qType, difficulty);
-        fallbackData.engineSource = "Auto-Fallback Lokal Instan (API Sedang Limit Kuota)";
+        fallbackData.engineSource = "Auto-Fallback Lokal Instan (Bebas Limit Kuota)";
         currentData = fallbackData;
         renderOutput(fallbackData);
         saveToHistory(fallbackData);
@@ -1207,9 +1348,8 @@ ${optimizedMaterial}
       indigo: {
         bgCover: "bg-gradient-to-br from-slate-900 via-indigo-950 to-sky-900 text-white",
         bgContent: "bg-gradient-to-br from-white via-slate-50 to-indigo-50/40 text-slate-800",
-        accentBar: "bg-indigo-600",
         badge: "bg-indigo-100 text-indigo-700",
-        cardBg: "bg-white/90 border border-indigo-100 shadow-sm",
+        cardBg: "bg-white/95 border border-indigo-100 shadow-xs text-slate-800",
         bulletIcon: "text-indigo-600",
         pptxBgCover: "1E1B4B",
         pptxBgSlide: "F8FAFC",
@@ -1219,10 +1359,9 @@ ${optimizedMaterial}
       },
       emerald: {
         bgCover: "bg-gradient-to-br from-teal-950 via-emerald-900 to-cyan-900 text-white",
-        bgContent: "bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/40 text-slate-800",
-        accentBar: "bg-emerald-600",
+        bgContent: "bg-gradient-to-br from-white via-emerald-50/30 to-teal-50/40 text-slate-800",
         badge: "bg-emerald-100 text-emerald-800",
-        cardBg: "bg-white/90 border border-emerald-100 shadow-sm",
+        cardBg: "bg-white/95 border border-emerald-100 shadow-xs text-slate-800",
         bulletIcon: "text-emerald-600",
         pptxBgCover: "064E3B",
         pptxBgSlide: "F0FDF4",
@@ -1233,9 +1372,8 @@ ${optimizedMaterial}
       dark: {
         bgCover: "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white",
         bgContent: "bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-slate-100",
-        accentBar: "bg-amber-400",
         badge: "bg-amber-500/20 text-amber-300",
-        cardBg: "bg-slate-800/90 border border-slate-700 shadow-sm",
+        cardBg: "bg-slate-800/95 border border-slate-700 shadow-xs text-slate-100",
         bulletIcon: "text-amber-400",
         pptxBgCover: "090D16",
         pptxBgSlide: "0F172A",
@@ -1246,9 +1384,8 @@ ${optimizedMaterial}
       amber: {
         bgCover: "bg-gradient-to-br from-stone-900 via-amber-950 to-orange-900 text-white",
         bgContent: "bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 text-stone-800",
-        accentBar: "bg-orange-600",
         badge: "bg-orange-100 text-orange-800",
-        cardBg: "bg-white/95 border border-orange-100 shadow-sm",
+        cardBg: "bg-white/95 border border-orange-100 shadow-xs text-stone-800",
         bulletIcon: "text-orange-600",
         pptxBgCover: "431407",
         pptxBgSlide: "FFFBEB",
@@ -1258,35 +1395,34 @@ ${optimizedMaterial}
       }
     };
 
-    // Hitung ukuran huruf adaptif sesuai kepadatan teks dan luas halaman slide
     function computeAdaptiveTypography(slide) {
       const titleLen = (slide.title || "").length;
       const bullets = slide.bullets || [];
       const totalChars = bullets.join(" ").length;
       const count = bullets.length;
 
-      let titleClass = "text-xl sm:text-2xl";
-      let pptxTitlePt = 24;
+      let titleClass = "text-lg sm:text-2xl";
+      let pptxTitlePt = 23;
       if (titleLen > 55) {
-        titleClass = "text-lg sm:text-xl";
-        pptxTitlePt = 20;
+        titleClass = "text-base sm:text-xl";
+        pptxTitlePt = 19;
       } else if (titleLen < 30) {
-        titleClass = "text-2xl sm:text-3xl";
+        titleClass = "text-xl sm:text-3xl";
         pptxTitlePt = 26;
       }
 
-      let bodyClass = "text-sm sm:text-base";
-      let spacingClass = "space-y-3";
-      let pptxBodyPt = 15;
+      let bodyClass = "text-xs sm:text-sm";
+      let spacingClass = "space-y-2.5";
+      let pptxBodyPt = 14.5;
 
-      if (totalChars > 420 || count >= 5) {
-        bodyClass = "text-xs sm:text-xs leading-snug";
+      if (totalChars > 400 || count >= 5) {
+        bodyClass = "text-[11px] sm:text-xs leading-snug";
         spacingClass = "space-y-1.5";
-        pptxBodyPt = 12;
-      } else if (totalChars > 260 || count === 4) {
-        bodyClass = "text-xs sm:text-sm leading-relaxed";
+        pptxBodyPt = 11.5;
+      } else if (totalChars > 240 || count === 4) {
+        bodyClass = "text-xs sm:text-xs leading-relaxed";
         spacingClass = "space-y-2";
-        pptxBodyPt = 13.5;
+        pptxBodyPt = 13;
       }
 
       return { titleClass, bodyClass, spacingClass, pptxTitlePt, pptxBodyPt };
@@ -1330,7 +1466,7 @@ ${optimizedMaterial}
           layout: "terms",
           title: "Definisi & Istilah Kunci",
           subtitle: "Konsep Esensial",
-          bullets: kt.slice(0, 4).map(t => `${t.term}: ${t.definition}`)
+          bullets: kt.slice(0, 4).map(t => t.term + ": " + t.definition)
         },
         {
           slideNumber: 6,
@@ -1356,13 +1492,13 @@ ${optimizedMaterial}
       const typo = computeAdaptiveTypography(slide);
 
       const canvas = document.getElementById("slideCanvas");
-      document.getElementById("slideCounterText").textContent = `${activeSlideIndex + 1} / ${currentSlides.length}`;
+      document.getElementById("slideCounterText").textContent = (activeSlideIndex + 1) + " / " + currentSlides.length;
 
       if (slide.layout === "cover" || activeSlideIndex === 0) {
-        canvas.className = `slide-aspect p-7 sm:p-10 flex flex-col justify-between ${theme.bgCover}`;
+        canvas.className = "slide-aspect p-6 sm:p-10 flex flex-col justify-between " + theme.bgCover;
         canvas.innerHTML = `
           <div class="flex items-center justify-between">
-            <span class="text-[11px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/15 backdrop-blur-xs">
+            <span class="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/15">
               Arraihan Academy (SWK) &bull; Executive Deck
             </span>
             <span class="text-xs font-mono opacity-75">Slide 01</span>
@@ -1370,15 +1506,15 @@ ${optimizedMaterial}
           <div class="my-auto space-y-3 max-w-2xl">
             <div class="w-16 h-1.5 rounded-full bg-amber-400"></div>
             <h2 class="${typo.titleClass} font-extrabold leading-tight tracking-tight">${slide.title}</h2>
-            <p class="text-sm sm:text-base opacity-85 font-medium">${slide.subtitle || "Ringkasan Materi & Poin Kunci"}</p>
+            <p class="text-xs sm:text-base opacity-85 font-medium">${slide.subtitle || "Ringkasan Materi & Poin Kunci"}</p>
           </div>
-          <div class="flex items-center justify-between text-[11px] opacity-75 border-t border-white/15 pt-3">
+          <div class="flex items-center justify-between text-[10px] sm:text-[11px] opacity-75 border-t border-white/15 pt-3">
             <span>Summary, PPT & Quiz Generator PRO</span>
             <span>${new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</span>
           </div>
         `;
       } else {
-        canvas.className = `slide-aspect p-6 sm:p-8 flex flex-col justify-between ${theme.bgContent}`;
+        canvas.className = "slide-aspect p-5 sm:p-8 flex flex-col justify-between " + theme.bgContent;
         const bullets = slide.bullets || [];
         const isTerms = slide.layout === "terms" || bullets.some(b => b.includes(":"));
 
@@ -1398,15 +1534,15 @@ ${optimizedMaterial}
             </div>`
           : `<div class="${typo.spacingClass} my-auto">
               ${bullets.map(b => `
-                <div class="p-3 rounded-xl ${theme.cardBg} flex items-start gap-3">
-                  <i class="fa-solid fa-circle-check ${theme.bulletIcon} mt-1 shrink-0"></i>
+                <div class="p-2.5 sm:p-3 rounded-xl ${theme.cardBg} flex items-start gap-2.5">
+                  <i class="fa-solid fa-circle-check ${theme.bulletIcon} mt-0.5 shrink-0"></i>
                   <p class="${typo.bodyClass} font-medium">${b}</p>
                 </div>
               `).join("")}
             </div>`;
 
         canvas.innerHTML = `
-          <div class="border-b border-slate-200/60 pb-2.5 flex items-start justify-between gap-2">
+          <div class="border-b border-slate-300/50 pb-2 flex items-start justify-between gap-2">
             <div>
               <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${theme.badge}">
                 ${slide.subtitle || "Poin Materi"}
@@ -1415,25 +1551,23 @@ ${optimizedMaterial}
             </div>
             <span class="text-xs font-extrabold opacity-40 font-mono">0${activeSlideIndex + 1}</span>
           </div>
-
           ${contentHtml}
-
-          <div class="flex items-center justify-between text-[10px] opacity-60 pt-2 border-t border-slate-200/50">
-            <span>${currentData.title || "Ringkasan Materi"}</span>
+          <div class="flex items-center justify-between text-[10px] opacity-60 pt-2 border-t border-slate-300/40">
+            <span class="truncate max-w-[70%]">${currentData.title || "Ringkasan Materi"}</span>
             <span>Arraihan Academy (SWK)</span>
           </div>
         `;
       }
 
-      // Render Thumbnail
       const thumbBox = document.getElementById("slideThumbnails");
       thumbBox.innerHTML = currentSlides.map((s, idx) => `
         <button
+          type="button"
           onclick="goToSlide(${idx})"
-          class="p-2 rounded-lg border text-left transition ${idx === activeSlideIndex ? 'border-indigo-600 bg-indigo-50/80 ring-2 ring-indigo-500/20' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}"
+          class="p-2 rounded-lg border text-left transition cursor-pointer ${idx === activeSlideIndex ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 ring-2 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100'}"
         >
-          <div class="text-[10px] font-extrabold text-indigo-600">Slide ${idx + 1}</div>
-          <div class="text-[10px] text-slate-700 font-semibold truncate">${s.title}</div>
+          <div class="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400">Slide ${idx + 1}</div>
+          <div class="text-[10px] text-slate-700 dark:text-slate-300 font-semibold truncate">${s.title}</div>
         </button>
       `).join("");
     }
@@ -1475,7 +1609,7 @@ ${optimizedMaterial}
       }
 
       const pptx = new PptxGenJS();
-      pptx.layout = "LAYOUT_16x9"; // 10 x 5.625 inches
+      pptx.layout = "LAYOUT_16x9";
       pptx.author = "Arraihan Academy (SWK)";
       pptx.company = "Arraihan Academy";
       pptx.title = currentData.title || "Ringkasan Materi";
@@ -1490,14 +1624,10 @@ ${optimizedMaterial}
 
         if (idx === 0 || s.layout === "cover") {
           slide.background = { color: theme.pptxBgCover };
-
-          // Pita Aksen Atas
           slide.addShape(pptx.ShapeType.rect, {
             x: 0.7, y: 1.1, w: 1.4, h: 0.1,
             fill: { color: "F59E0B" }
           });
-
-          // Judul Cover Auto-Fit
           slide.addText(s.title || "Ringkasan Materi", {
             x: 0.7, y: 1.4, w: 8.6, h: 2.1,
             fontSize: typo.pptxTitlePt + 4,
@@ -1507,16 +1637,12 @@ ${optimizedMaterial}
             valign: "middle",
             fit: "shrink"
           });
-
-          // Subjudul Cover
           slide.addText(s.subtitle || "Ringkasan Eksekutif & Evaluasi Pembelajaran", {
             x: 0.7, y: 3.6, w: 8.6, h: 0.7,
             fontSize: 15,
             color: "E2E8F0",
             fontFace: "Arial"
           });
-
-          // Footer Cover
           slide.addText("Licensed by Arraihan Academy (SWK)  |  Summary, PPT & Quiz Generator PRO", {
             x: 0.7, y: 4.9, w: 8.6, h: 0.4,
             fontSize: 10,
@@ -1525,14 +1651,10 @@ ${optimizedMaterial}
           });
         } else {
           slide.background = { color: theme.pptxBgSlide };
-
-          // Bar Aksen Kiri Header
           slide.addShape(pptx.ShapeType.rect, {
             x: 0.5, y: 0.4, w: 0.12, h: 0.85,
             fill: { color: theme.pptxAccent }
           });
-
-          // Subjudul / Kategori Kecil
           slide.addText((s.subtitle || "POIN UTAMA MATERI").toUpperCase(), {
             x: 0.75, y: 0.38, w: 7.8, h: 0.3,
             fontSize: 10,
@@ -1540,9 +1662,7 @@ ${optimizedMaterial}
             color: theme.pptxAccent,
             fontFace: "Arial"
           });
-
-          // Judul Slide (Proporsional dengan Panjang Huruf)
-          slide.addText(s.title || `Slide ${idx + 1}`, {
+          slide.addText(s.title || "Slide " + (idx + 1), {
             x: 0.75, y: 0.65, w: 8.5, h: 0.65,
             fontSize: typo.pptxTitlePt,
             bold: true,
@@ -1552,7 +1672,6 @@ ${optimizedMaterial}
             fit: "shrink"
           });
 
-          // Kotak Konten Proporsional di Tengah Kanvas
           const bullets = s.bullets || [];
           const count = Math.max(bullets.length, 1);
           const startY = 1.5;
@@ -1585,14 +1704,13 @@ ${optimizedMaterial}
             });
           });
 
-          // Footer Halaman Slide
-          slide.addText(`${currentData.title || "Materi"} — Arraihan Academy (SWK)`, {
+          slide.addText((currentData.title || "Materi") + " — Arraihan Academy (SWK)", {
             x: 0.6, y: 5.15, w: 7.0, h: 0.3,
             fontSize: 9,
             color: theme.pptxTextMuted,
             fontFace: "Arial"
           });
-          slide.addText(`Slide ${idx + 1} / ${slidesData.length}`, {
+          slide.addText("Slide " + (idx + 1) + " / " + slidesData.length, {
             x: 7.8, y: 5.15, w: 1.6, h: 0.3,
             fontSize: 9,
             align: "right",
@@ -1603,7 +1721,7 @@ ${optimizedMaterial}
         }
       });
 
-      const fileName = `${sanitizeFilename(currentData.title)}_SlidePPT_Arraihan.pptx`;
+      const fileName = sanitizeFilename(currentData.title) + "_SlidePPT_Arraihan.pptx";
       pptx.writeFile({ fileName });
     }
 
@@ -1616,22 +1734,22 @@ ${optimizedMaterial}
       document.getElementById("summaryOverview").textContent = data.overview || "-";
 
       if (data.engineSource) {
-        document.getElementById("engineUsedLabel").innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Diproses oleh: <span class="text-indigo-600">${data.engineSource}</span>`;
+        document.getElementById("engineUsedLabel").innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Diproses oleh: <span class="text-indigo-600 dark:text-indigo-400">' + data.engineSource + '</span>';
       }
 
       const kpList = document.getElementById("summaryKeyPoints");
       kpList.innerHTML = (data.keyPoints || []).map(pt => `
         <li class="flex items-start gap-2.5">
-          <i class="fa-solid fa-circle-check text-indigo-600 mt-1 shrink-0"></i>
+          <i class="fa-solid fa-circle-check text-indigo-600 dark:text-indigo-400 mt-1 shrink-0"></i>
           <span>${pt}</span>
         </li>
       `).join("");
 
       const termsGrid = document.getElementById("summaryTerms");
       termsGrid.innerHTML = (data.keyTerms || []).map(item => `
-        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-          <span class="font-bold text-xs text-indigo-700 block">${item.term}</span>
-          <span class="text-xs text-slate-600 mt-0.5 block leading-relaxed">${item.definition}</span>
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700">
+          <span class="font-bold text-xs text-indigo-700 dark:text-indigo-300 block">${item.term}</span>
+          <span class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 block leading-relaxed">${item.definition}</span>
         </div>
       `).join("");
 
@@ -1640,7 +1758,7 @@ ${optimizedMaterial}
       if (data.webSources && data.webSources.length > 0) {
         sourcesBox.classList.remove("hidden");
         sourcesList.innerHTML = data.webSources.map(src => `
-          <a href="${src.uri}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full font-medium transition">
+          <a href="${src.uri}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3 py-1 rounded-full font-medium transition">
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
             <span class="truncate max-w-[240px]">${src.title}</span>
           </a>
@@ -1650,11 +1768,9 @@ ${optimizedMaterial}
         sourcesList.innerHTML = "";
       }
 
-      // Render Slide PPT
       activeSlideIndex = 0;
       renderSlideDeck();
 
-      // Render Kuis Interaktif
       const interactiveList = document.getElementById("interactiveQuizList");
       document.getElementById("scoreBadge").classList.add("hidden");
 
@@ -1664,41 +1780,40 @@ ${optimizedMaterial}
           ? q.options.map((opt, oIdx) => {
               const letter = ["A", "B", "C", "D"][oIdx] || opt.charAt(0);
               return `
-                <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-indigo-50/40 cursor-pointer text-xs transition">
-                  <input type="radio" name="q_${idx}" value="${letter}" class="mt-0.5 text-indigo-600" />
-                  <span class="text-slate-700">${opt}</span>
+                <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/40 cursor-pointer text-xs transition">
+                  <input type="radio" name="q_${idx}" value="${letter}" class="mt-0.5 accent-indigo-600" />
+                  <span class="text-slate-700 dark:text-slate-200">${opt}</span>
                 </label>
               `;
             }).join("")
-          : `<textarea id="essay_${idx}" rows="2" placeholder="Ketik jawaban uraian Anda..." class="w-full rounded-xl border border-slate-300 p-2.5 text-xs outline-none focus:border-indigo-600"></textarea>`;
+          : `<textarea id="essay_${idx}" rows="2" placeholder="Ketik jawaban uraian Anda..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 p-2.5 text-xs outline-none focus:border-indigo-600"></textarea>`;
 
         return `
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/40 space-y-2.5" id="qcard_${idx}">
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/40 space-y-2.5" id="qcard_${idx}">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-extrabold text-indigo-600 uppercase">Pertanyaan ${q.number || idx + 1}</span>
-              <span class="text-[11px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-md font-medium">${q.cognitiveLevel || "Pemahaman"}</span>
+              <span class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase">Pertanyaan ${q.number || idx + 1}</span>
+              <span class="text-[11px] bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2 py-0.5 rounded-md font-medium">${q.cognitiveLevel || "Pemahaman"}</span>
             </div>
-            <p class="text-sm font-semibold text-slate-800">${q.question}</p>
+            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">${q.question}</p>
             <div class="space-y-1.5 pt-1">${optionsHtml}</div>
             <div id="feedback_${idx}" class="hidden p-3 rounded-xl text-xs mt-2"></div>
           </div>
         `;
       }).join("");
 
-      // Render Lembar Soal & Kunci Jawaban
       const paperList = document.getElementById("paperQuestionsList");
       paperList.innerHTML = (data.questions || []).map((q, idx) => {
-        const optionsText = (q.options || []).map(o => `<div class="ml-4 text-xs text-slate-700 py-0.5">${o}</div>`).join("");
+        const optionsText = (q.options || []).map(o => `<div class="ml-4 text-xs text-slate-700 dark:text-slate-300 py-0.5">${o}</div>`).join("");
         return `
-          <div class="p-4 rounded-xl border border-slate-200 space-y-2">
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex justify-between items-start gap-2">
-              <p class="text-sm font-bold text-slate-800">${q.number || idx + 1}. ${q.question}</p>
-              <span class="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded shrink-0">${q.cognitiveLevel || "Kuis"}</span>
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-100">${q.number || idx + 1}. ${q.question}</p>
+              <span class="text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded shrink-0">${q.cognitiveLevel || "Kuis"}</span>
             </div>
             ${optionsText}
-            <div class="answer-key-box pt-2 mt-2 border-t border-dashed border-slate-200 text-xs bg-emerald-50/60 p-3 rounded-lg">
-              <p class="font-bold text-emerald-800"><i class="fa-solid fa-key mr-1"></i> Kunci Jawaban: ${q.correctAnswer}</p>
-              <p class="text-slate-600 mt-1"><strong class="text-slate-700">Pembahasan:</strong> ${q.explanation}</p>
+            <div class="answer-key-box pt-2 mt-2 border-t border-dashed border-slate-200 dark:border-slate-700 text-xs bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-lg">
+              <p class="font-bold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-key mr-1"></i> Kunci Jawaban: ${q.correctAnswer}</p>
+              <p class="text-slate-600 dark:text-slate-300 mt-1"><strong class="text-slate-700 dark:text-slate-200">Pembahasan:</strong> ${q.explanation}</p>
             </div>
           </div>
         `;
@@ -1713,34 +1828,34 @@ ${optimizedMaterial}
       const total = currentData.questions.length;
 
       currentData.questions.forEach((q, idx) => {
-        const fb = document.getElementById(`feedback_${idx}`);
+        const fb = document.getElementById("feedback_" + idx);
         fb.classList.remove("hidden");
 
         if (q.type === "pg" && q.options && q.options.length > 0) {
-          const selected = document.querySelector(`input[name="q_${idx}"]:checked`);
+          const selected = document.querySelector('input[name="q_' + idx + '"]:checked');
           const userAns = selected ? selected.value.toUpperCase() : "";
           const cleanKey = (q.correctAnswer || "").trim().charAt(0).toUpperCase();
 
           if (userAns === cleanKey) {
             correctCount++;
-            fb.className = "p-3 rounded-xl text-xs mt-2 bg-emerald-50 border border-emerald-200 text-emerald-900";
-            fb.innerHTML = `<strong><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Benar! (Kunci: ${q.correctAnswer})</strong><br><span class="block mt-1 text-slate-600">${q.explanation}</span>`;
+            fb.className = "p-3 rounded-xl text-xs mt-2 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200";
+            fb.innerHTML = '<strong><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Benar! (Kunci: ' + q.correctAnswer + ')</strong><br><span class="block mt-1 opacity-90">' + q.explanation + '</span>';
           } else {
-            fb.className = "p-3 rounded-xl text-xs mt-2 bg-rose-50 border border-rose-200 text-rose-900";
-            fb.innerHTML = `<strong><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> Kurang Tepat. Kunci Jawaban: ${q.correctAnswer}</strong><br><span class="block mt-1 text-slate-600">${q.explanation}</span>`;
+            fb.className = "p-3 rounded-xl text-xs mt-2 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200";
+            fb.innerHTML = '<strong><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> Kurang Tepat. Kunci Jawaban: ' + q.correctAnswer + '</strong><br><span class="block mt-1 opacity-90">' + q.explanation + '</span>';
           }
         } else {
-          const essayVal = (document.getElementById(`essay_${idx}`)?.value || "").trim();
+          const essayVal = (document.getElementById("essay_" + idx)?.value || "").trim();
           if (essayVal.length > 5) correctCount++;
-          fb.className = "p-3 rounded-xl text-xs mt-2 bg-sky-50 border border-sky-200 text-sky-900";
-          fb.innerHTML = `<strong><i class="fa-solid fa-lightbulb text-sky-600 mr-1"></i> Pedoman Kunci Jawaban:</strong> ${q.correctAnswer}<br><span class="block mt-1 text-slate-600">${q.explanation}</span>`;
+          fb.className = "p-3 rounded-xl text-xs mt-2 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200";
+          fb.innerHTML = '<strong><i class="fa-solid fa-lightbulb text-sky-600 mr-1"></i> Pedoman Kunci Jawaban:</strong> ' + q.correctAnswer + '<br><span class="block mt-1 opacity-90">' + q.explanation + '</span>';
         }
       });
 
       const finalScore = Math.round((correctCount / total) * 100);
       const badge = document.getElementById("scoreBadge");
       badge.classList.remove("hidden");
-      badge.textContent = `Skor Akhir: ${finalScore} / 100 (${correctCount}/${total} Soal)`;
+      badge.textContent = "Skor Akhir: " + finalScore + " / 100 (" + correctCount + "/" + total + " Soal)";
       badge.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
@@ -1773,10 +1888,10 @@ ${optimizedMaterial}
       Object.keys(views).forEach(k => {
         if (k === tab) {
           views[k].classList.remove("hidden");
-          tabs[k].className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm transition";
+          tabs[k].className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs transition cursor-pointer";
         } else {
           views[k].classList.add("hidden");
-          tabs[k].className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+          tabs[k].className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer";
         }
       });
     }
@@ -1791,7 +1906,7 @@ ${optimizedMaterial}
     function exportToWord() {
       if (!currentData) return;
       const title = currentData.title || "Ringkasan Materi & Evaluasi Kuis";
-      const fileName = `${sanitizeFilename(title)}_ArraihanAcademy.doc`;
+      const fileName = sanitizeFilename(title) + "_ArraihanAcademy.doc";
       const dateStr = new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
 
       const keyPointsHtml = (currentData.keyPoints || []).map(p => `<li style="margin-bottom:6px;">${p}</li>`).join("");
@@ -1838,13 +1953,10 @@ ${optimizedMaterial}
             <h1>${title}</h1>
             <p style="margin:0; font-size:9.5pt; color:#64748b;">Tanggal Penyusunan: ${dateStr}</p>
           </div>
-
           <h2>A. Ringkasan Eksekutif (Intisari Materi)</h2>
           <p style="text-align:justify;">${currentData.overview || "-"}</p>
-
           <h2>B. Poin-Poin Penting Utama</h2>
           <ul>${keyPointsHtml}</ul>
-
           <h2>C. Definisi & Istilah Kunci</h2>
           <table>
             <thead>
@@ -1855,15 +1967,11 @@ ${optimizedMaterial}
             </thead>
             <tbody>${termsRowsHtml}</tbody>
           </table>
-
           <br clear="all" style="page-break-before:always" />
-
           <h2>D. Lembar Evaluasi Kuis (10 Pertanyaan)</h2>
           <p style="font-size:10pt; color:#475569;">Nama Peserta : .................................................... &nbsp;&nbsp;&nbsp; Nilai : ....................</p>
           ${questionsHtml}
-
           <br clear="all" style="page-break-before:always" />
-
           <h2>E. Kunci Jawaban & Pembahasan Lengkap</h2>
           <table>
             <thead>
@@ -1893,11 +2001,11 @@ ${optimizedMaterial}
     function exportToExcel() {
       if (!currentData) return;
       const title = currentData.title || "Bank_Soal_Kuis";
-      const fileName = `${sanitizeFilename(title)}_ArraihanAcademy.csv`;
+      const fileName = sanitizeFilename(title) + "_ArraihanAcademy.csv";
 
       const escapeCsv = (val) => {
         const str = String(val ?? "").replace(/\r?\n|\r/g, " ");
-        return `"${str.replace(/"/g, '""')}"`;
+        return '"' + str.replace(/"/g, '""') + '"';
       };
 
       const rows = [];
@@ -1905,7 +2013,7 @@ ${optimizedMaterial}
       rows.push(["INTISARI MATERI", currentData.overview || "-"]);
       rows.push([]);
       rows.push(["POIN PENTING UTAMA"]);
-      (currentData.keyPoints || []).forEach((pt, i) => rows.push([`Poin ${i + 1}`, pt]));
+      (currentData.keyPoints || []).forEach((pt, i) => rows.push(["Poin " + (i + 1), pt]));
       rows.push([]);
       rows.push(["ISTILAH KUNCI", "DEFINISI"]);
       (currentData.keyTerms || []).forEach(t => rows.push([t.term, t.definition]));
@@ -1959,31 +2067,31 @@ ${optimizedMaterial}
       if (!currentData) return;
       if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
-        document.getElementById("ttsBtn").innerHTML = `<i class="fa-solid fa-volume-high"></i> Suara`;
+        document.getElementById("ttsBtn").innerHTML = '<i class="fa-solid fa-volume-high"></i> Suara';
         return;
       }
-      const textToRead = `${currentData.title}. ${currentData.overview}. Poin penting: ${(currentData.keyPoints || []).join(". ")}`;
+      const textToRead = currentData.title + ". " + currentData.overview + ". Poin penting: " + (currentData.keyPoints || []).join(". ");
       const utterance = new SpeechSynthesisUtterance(textToRead);
       utterance.lang = "id-ID";
       utterance.rate = 1.0;
       utterance.onend = () => {
-        document.getElementById("ttsBtn").innerHTML = `<i class="fa-solid fa-volume-high"></i> Suara`;
+        document.getElementById("ttsBtn").innerHTML = '<i class="fa-solid fa-volume-high"></i> Suara';
       };
-      document.getElementById("ttsBtn").innerHTML = `<i class="fa-solid fa-stop"></i> Stop`;
+      document.getElementById("ttsBtn").innerHTML = '<i class="fa-solid fa-stop"></i> Stop';
       window.speechSynthesis.speak(utterance);
     }
 
     function copyAllOutput() {
       if (!currentData) return;
-      let txt = `RINGKASAN MATERI: ${currentData.title}\n\n`;
-      txt += `INTISARI:\n${currentData.overview}\n\n`;
-      txt += `POIN PENTING:\n${(currentData.keyPoints || []).map(p => `- ${p}`).join("\n")}\n\n`;
-      txt += `ISTILAH KUNCI:\n${(currentData.keyTerms || []).map(t => `* ${t.term}: ${t.definition}`).join("\n")}\n\n`;
-      txt += `10 PERTANYAAN KUIS & KUNCI JAWABAN:\n`;
+      let txt = "RINGKASAN MATERI: " + currentData.title + "\n\n";
+      txt += "INTISARI:\n" + currentData.overview + "\n\n";
+      txt += "POIN PENTING:\n" + (currentData.keyPoints || []).map(p => "- " + p).join("\n") + "\n\n";
+      txt += "ISTILAH KUNCI:\n" + (currentData.keyTerms || []).map(t => "* " + t.term + ": " + t.definition).join("\n") + "\n\n";
+      txt += "10 PERTANYAAN KUIS & KUNCI JAWABAN:\n";
       (currentData.questions || []).forEach((q, i) => {
-        txt += `\n${i + 1}. ${q.question}\n`;
+        txt += "\n" + (i + 1) + ". " + q.question + "\n";
         if (q.options && q.options.length) txt += q.options.join("\n") + "\n";
-        txt += `Kunci Jawaban: ${q.correctAnswer}\nPembahasan: ${q.explanation}\n`;
+        txt += "Kunci Jawaban: " + q.correctAnswer + "\nPembahasan: " + q.explanation + "\n";
       });
       navigator.clipboard.writeText(txt);
       alert("Seluruh ringkasan, 10 soal kuis, dan kunci jawaban berhasil disalin ke clipboard!");
@@ -2005,12 +2113,12 @@ ${optimizedMaterial}
       const container = document.getElementById("historyList");
       const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || "[]");
       if (list.length === 0) {
-        container.innerHTML = `<p class="text-slate-400 italic text-xs">Belum ada riwayat materi.</p>`;
+        container.innerHTML = '<p class="text-slate-400 italic text-xs">Belum ada riwayat materi.</p>';
         return;
       }
       container.innerHTML = list.map((item, idx) => `
-        <div onclick="loadHistoryItem(${idx})" class="p-2 rounded-lg border border-slate-100 hover:bg-indigo-50/50 cursor-pointer flex justify-between items-center transition">
-          <span class="font-semibold text-slate-700 truncate max-w-[200px]">${item.data.title || "Materi Tanpa Judul"}</span>
+        <div onclick="loadHistoryItem(${idx})" class="p-2 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/40 cursor-pointer flex justify-between items-center transition">
+          <span class="font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[200px]">${item.data.title || "Materi Tanpa Judul"}</span>
           <span class="text-[10px] text-slate-400 shrink-0">${item.date}</span>
         </div>
       `).join("");
@@ -2036,7 +2144,9 @@ ${optimizedMaterial}
       updateCharCount();
     }
 
+    // Inisialisasi saat halaman selesai dimuat
     window.addEventListener("DOMContentLoaded", () => {
+      initTheme();
       checkLicenseStatus();
       updateApiButtonUI();
       renderHistoryList();
